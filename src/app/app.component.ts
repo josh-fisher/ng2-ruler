@@ -1,10 +1,22 @@
+import 'hammerjs';
+
 import { Component } from '@angular/core';
+// import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  selector: 'ng2-ruler',
+  templateUrl: './app.component.pug',
+  styleUrls: ['./app.component.less']
 })
-export class AppComponent {
+export class Ng2RulerComponent {
   title = 'app works!';
+
+  onSwipe (event) {
+    console.log(event);
+  }
+
+  onPan (event) {
+    console.log(event);
+    // Test
+  }
 }
