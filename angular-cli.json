@@ -8,14 +8,14 @@
       "root": "src",
       "outDir": "dist",
       "assets": "assets",
-      "index": "index.html",
+      "index": "index.pug",
       "main": "main.ts",
       "test": "test.ts",
       "tsconfig": "tsconfig.json",
-      "prefix": "app",
+      "prefix": "ng2ruler",
       "mobile": false,
       "styles": [
-        "styles.css"
+        "styles.less"
       ],
       "scripts": [],
       "environments": {
@@ -38,7 +38,7 @@
     }
   },
   "defaults": {
-    "styleExt": "css",
+    "styleExt": "less",
     "prefixInterfaces": false
   }
 }

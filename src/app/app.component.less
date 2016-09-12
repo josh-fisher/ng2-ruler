@@ -1,5 +1,47 @@
-.testHammer {
-  width: 500px;
-  height: 500px;
-  background-color: blue;
+@import './shared/globals';
+
+:host {
+  display: block;
+  position: relative;
+  background-color: @background;
+  z-index: 1;
+  font-family: 'Source Sans Pro';
+  font-weight: normal;
+}
+
+svg {
+  background-color: @background;
+
+  g {
+    .noselect;
+
+    .hatch {
+      stroke: @text;
+      stroke-width: 1px;
+    }
+
+    .unit {
+      stroke: @text;
+      stroke-width: 2px;
+    }
+
+    .title {
+      font-size: 11px;
+      fill: @text;
+    }
+
+    .phelperGroup {
+      z-index: 2;
+
+      .phelper {
+        stroke: @highlight;
+        stroke-width: 2px;
+      }
+
+      .title {
+        fill: @highlight;
+        font-weight: bold;
+      }
+    }
+  }
 }

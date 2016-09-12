@@ -1,2 +1,25 @@
-h1 {{title}}
-.testHammer((swipe)="onSwipe($event)", (pan)="onPan($event)")
+svg:svg([attr.width]="width", [attr.height]="height")
+  svg:g.horizontal(*ngIf="isHorizontal()")
+    svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="hatchSize")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="unitSize")
+    svg:text.title(*ngFor="let line of unitRange", [attr.x]="calcTitleX(line)", [attr.y]="calcTitleY(line)", text-anchor="left")
+      svg:tspan {{(unitsPerRange) * line / pixelsPerNUnit}}
+    svg:g.phelperGroup
+      svg:line.phelper([attr.x1]="pHelperXPos", y1="0", [attr.x2]="pHelperXPos", [attr.y2]="pHelperHeight")
+      svg:text.title([attr.x]="pHelperXPos + 10", [attr.y]="pHelperTitleYPos", text-anchor="left")
+        svg:tspan {{pHelperTitle}}
+  svg:g.vertical(*ngIf="!isHorizontal()")
+    svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="hatchSize", [attr.y2]="line")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="unitSize", [attr.y2]="line")
+    svg:text.title(*ngFor="let line of unitRange", [attr.y]="calcTitleY(line)", text-anchor="left")
+      svg:tspan(*ngFor="let splitLine of generateVerticalText(line); let i = index", [attr.x]="calcTitleX(line)", [attr.y]="calcMultiTitleY(i, line)") {{splitLine}}
+    svg:g.phelperGroup
+      svg:line.phelper([attr.x1]="0", [attr.y1]="pHelperYPos", [attr.x2]="pHelperWidth", [attr.y2]="pHelperYPos")
+      svg:text.title([attr.x]="pHelperTitleXPos", [attr.y]="pHelperYPos - 10", text-anchor="left")
+        svg:tspan {{pHelperTitle}}
+  svg:g.horizontal(*ngIf="isHorizontal() && rulerType == 1")
+    svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="defaultSize * 2", [attr.x2]="line", [attr.y2]="defaultSize * 2 - hatchSize")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="defaultSize * 2", [attr.x2]="line", [attr.y2]="defaultSize * 2 - unitSize")
+  svg:g.vertical(*ngIf="!isHorizontal() && rulerType == 1")
+    svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="defaultSize * 2", [attr.y1]="line", [attr.x2]="defaultSize * 2 - hatchSize", [attr.y2]="line")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="defaultSize * 2", [attr.y1]="line", [attr.x2]="defaultSize * 2 - unitSize", [attr.y2]="line")
