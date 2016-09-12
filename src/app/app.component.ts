@@ -1,6 +1,7 @@
 import 'hammerjs';
 
 import { Component, ElementRef, OnInit }  from '@angular/core';
+import { DomSanitizer  } from '@angular/platform-browser';
 // import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 
 import { Orientation }                                    from './shared/orientation.enum';
@@ -16,9 +17,13 @@ import {Justify} from './shared/justify.enum';
   templateUrl: './app.component.pug',
   styleUrls: ['./app.component.less'],
   host: {
-    '(mousemove)': 'onHostMouseMove($event)',
-    '(swipe)': 'onHostSwipe($event)',
-    '(pan)': 'onHostPan($event)',
+    '(panleft)': 'onHostPan($event)',
+    '(panright)': 'onHostPan($event)',
+    '(panup)': 'onHostPan($event)',
+    '(pandown)': 'onHostPan($event)',
+    '(panstart)': 'onHostPanStart($event)',
+    '(panend)': 'onHostPanEnd($event)',
+    '(mousewheel)': 'onHostMouseWheel($event)'
   }
 })
 export class Ng2RulerComponent implements OnInit {
@@ -26,7 +31,7 @@ export class Ng2RulerComponent implements OnInit {
   rulerType:          RulerType       = RulerType.Single;
   justification:      Justify         = Justify.TopOrLeft;
   unitType:           any             = TimeUnit.Seconds;
-  rulerMode:          RulerMode       = RulerMode.Grow;
+  rulerMode:          RulerMode       = RulerMode.Responsive;
   theme:              Theme           = Theme.Dark;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
@@ -39,7 +44,7 @@ export class Ng2RulerComponent implements OnInit {
   unitSize:           number          = this.defaultSize / 3;
   hatchRange:         Array<number>   = [];
   unitRange:          Array<number>   = [];
-  range:              any             = { start: 0, end: 60 };
+  range:              any             = { start: 0, end: 500 };
   pHelperXPos:        number          = 0;
   pHelperYPos:        number          = 0;
   pHelperHeight:      number          = 0;
@@ -47,19 +52,27 @@ export class Ng2RulerComponent implements OnInit {
   pHelperTitle:       number          = 0;
   pHelperTitleXPos:   number          = 0;
   pHelperTitleYPos:   number          = 0;
+  showPHelper:        boolean         = true;
+  panning:            boolean         = false;
+  panDelta:           number          = 0;
+  pPanDelta:          number          = 0;
+  allowDragPan:       boolean         = true;
+  allowWheelPan:      boolean         = true;
 
-  constructor (private elementRef: ElementRef) {
+  constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
   }
 
   ngOnInit () {
     this.initSize();
     this.initRange();
     this.initPHelper();
+    this.initCursor();
 
     let self = this;
     window.addEventListener('resize', () => {
       self.initSize();
       self.initRange();
+      self.initCursor();
     });
   }
 
@@ -101,6 +114,17 @@ export class Ng2RulerComponent implements OnInit {
       this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
       this.unitRange = range(this.range.start, endRange , this.pixelsPerNUnit);
     }
+  }
+
+  initCursor () {
+      let offsetHeight = this.elementRef.nativeElement.offsetHeight;
+      let offsetWidth = this.elementRef.nativeElement.offsetWidth;
+      let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
+
+      if (this.orientation === Orientation.Horizontal && endRange > offsetWidth ||
+          this.orientation === Orientation.Vertical && endRange > offsetHeight) {
+          this.elementRef.nativeElement.querySelector('svg').style.cursor = '-webkit-grabbing';
+      }
   }
 
   initPHelper () {
@@ -180,16 +204,75 @@ export class Ng2RulerComponent implements OnInit {
   }
 
   onHostMouseMove (event) {
-    let position = (this.orientation === Orientation.Horizontal) ? event.offsetX : event.offsetY;
-    let unit =  (this.unitsPerRange) * position / this.pixelsPerNUnit;
-    this.pHelperXPos = (this.orientation === Orientation.Horizontal) ? event.offsetX : 0;
-    this.pHelperYPos = (this.orientation === Orientation.Vertical) ? event.offsetY : 0;
-    this.pHelperTitle = unit;
-  }
-
-  onHostSwipe (event) {
+      if (!this.panning && event.target.tagName == 'svg') {
+          let position = (this.orientation === Orientation.Horizontal) ? event.offsetX : event.offsetY;
+          let unit =  (this.unitsPerRange) * (position - this.panDelta) / this.pixelsPerNUnit;
+          this.pHelperXPos = (this.orientation === Orientation.Horizontal) ? event.offsetX - this.panDelta: 0;
+          this.pHelperYPos = (this.orientation === Orientation.Vertical) ? event.offsetY - this.panDelta: 0;
+          this.pHelperTitle = unit;
+      }
   }
 
   onHostPan (event) {
+      if (this.panning) {
+          let offsetHeight = this.elementRef.nativeElement.offsetHeight;
+          let offsetWidth = this.elementRef.nativeElement.offsetWidth;
+          let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
+          let widthDiff = endRange - offsetWidth;
+          let heightDiff = endRange - offsetHeight;
+          let deltaX = this.range.start - (this.pPanDelta + event.deltaX);
+          let deltaY = this.range.start - (this.pPanDelta + event.deltaY);
+
+          if (this.orientation === Orientation.Horizontal && endRange > offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.range.start) {
+              this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+              this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
+              this.panDelta = deltaX ;
+          } else if (this.orientation === Orientation.Vertical && endRange > offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.range.start) {
+              this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+              this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
+              this.panDelta = deltaY;
+          }
+      }
+  }
+
+  onHostPanStart (event) {
+      if (this.allowDragPan) {
+          this.panning = true;
+          this.showPHelper = false;
+      }
+  }
+
+  onHostPanEnd (event) {
+      this.panning = false;
+      this.showPHelper = true;
+      this.pPanDelta = -(this.panDelta);
+  }
+
+  onHostMouseWheel (event) {
+      if (this.allowWheelPan) {
+          this.panning = true;
+          this.showPHelper = false;
+          let delta = (event.deltaY < 100) ? this.unitsPerRange : -this.unitsPerRange;
+          if (this.orientation === Orientation.Horizontal) {
+              this.onHostPan({deltaX: delta, deltaY: 1});
+          } else {
+              this.onHostPan({deltaX: 1, deltaY: delta});
+          }
+          this.panning = false;
+          this.showPHelper = true;
+          this.pPanDelta = -(this.panDelta);
+      }
+  }
+
+  getPanTranslation () {
+      let style = '';
+      if (this.orientation === Orientation.Horizontal) {
+          style = 'transform: translateX(' + this.panDelta + 'px)';
+      } else {
+          style = 'transform: translateY(' + this.panDelta + 'px)';
+      }
+
+      let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
+      return sanitizedStyle;
   }
 }
