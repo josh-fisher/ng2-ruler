@@ -17,6 +17,7 @@ import {Justify} from './shared/justify.enum';
   templateUrl: './app.component.pug',
   styleUrls: ['./app.component.less'],
   host: {
+    '(mousemove)': 'onHostMouseMove($event)',
     '(panleft)': 'onHostPan($event)',
     '(panright)': 'onHostPan($event)',
     '(panup)': 'onHostPan($event)',
@@ -58,6 +59,7 @@ export class Ng2RulerComponent implements OnInit {
   pPanDelta:          number          = 0;
   allowDragPan:       boolean         = true;
   allowWheelPan:      boolean         = true;
+  showHatching:       boolean         = false;
 
   constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
   }
