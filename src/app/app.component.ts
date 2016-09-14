@@ -10,7 +10,8 @@ import { range }                                          from './shared/index';
 import { TimeUnit, MetricUnit, ImperialUnit, MediaUnit }  from './shared/unit.enum';
 import {RulerMode}                                        from './shared/rulermode.enum';
 import {Theme}                                            from './shared/theme.enum';
-import {Justify} from './shared/justify.enum';
+import {Justify}                                          from './shared/justify.enum';
+import {Alignment}                                        from './shared/alignment.enum';
 
 @Component({
   selector: 'ng2-ruler',
@@ -33,6 +34,8 @@ export class Ng2RulerComponent implements OnInit {
   justification:      Justify         = Justify.TopOrLeft;
   unitType:           any             = TimeUnit.Seconds;
   rulerMode:          RulerMode       = RulerMode.Responsive;
+  tickAlignment:      Alignment       = Alignment.Right;
+  textAlignment:      Alignment       = Alignment.Center;
   theme:              Theme           = Theme.Dark;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
@@ -59,12 +62,13 @@ export class Ng2RulerComponent implements OnInit {
   pPanDelta:          number          = 0;
   allowDragPan:       boolean         = true;
   allowWheelPan:      boolean         = true;
-  showHatching:       boolean         = false;
+  showHatching:       boolean         = true;
 
   constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
   }
 
   ngOnInit () {
+    this.initDefaults();
     this.initSize();
     this.initRange();
     this.initPHelper();
@@ -80,6 +84,18 @@ export class Ng2RulerComponent implements OnInit {
 
   initInput () {
     // todo: implement me!
+  }
+
+  initDefaults () {
+      if (this.orientation === Orientation.Horizontal && this.tickAlignment === Alignment.Top) {
+          this.tickAlignment = Alignment.Left;
+      } else if (this.orientation === Orientation.Horizontal && this.tickAlignment === Alignment.Bottom) {
+          this.tickAlignment = Alignment.Right;
+      } else if (this.orientation === Orientation.Vertical && this.tickAlignment === Alignment.Left) {
+          this.tickAlignment = Alignment.Top;
+      } else if (this.orientation === Orientation.Vertical && this.tickAlignment === Alignment.Right) {
+          this.tickAlignment = Alignment.Bottom;
+      }
   }
 
   initSize () {
@@ -146,57 +162,21 @@ export class Ng2RulerComponent implements OnInit {
     return (this.orientation === Orientation.Horizontal) ? true : false;
   }
 
-  calcTitleX (value) {
-    let padding = 0;
-    let offsetWidth = this.elementRef.nativeElement.offsetWidth;
+  calcMultiTitleY (index, value) {
+    let offset = 0;
+    let offsetHeight = this.elementRef.nativeElement.offsetHeight;
     let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
 
     if (this.orientation === Orientation.Vertical) {
-      let fontSplit = this.fontSize / 4;
-      let sizeHalf = (this.defaultSize * 2) / 2;
-      return (this.rulerType === RulerType.Single) ? this.defaultSize - this.fontSize : sizeHalf - fontSplit;
-    } else if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Grow && unit == this.range.end) {
-      padding = value.toString().split('').length * -(this.fontSize / 2);
-    } else if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Responsive && value == offsetWidth) {
-      padding = value.toString().split('').length * -(this.fontSize / 2);
+        if (this.rulerMode === RulerMode.Grow && unit == this.range.end || this.rulerMode === RulerMode.Responsive && value == offsetHeight) {
+            let negIndex = (index == 0) ? -1 : index - 1;
+            offset = negIndex * this.fontSize;
+        } else {
+            offset = ((index + 1) * this.fontSize);
+        }
     }
-    return value + padding;
-  }
 
-  calcTitleY (value) {
-    let padding = 0;
-    let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-    let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
-
-    if (this.orientation === Orientation.Horizontal) {
-      let fontSplit = this.fontSize / 4;
-      let sizeHalf = (this.defaultSize * 2) / 2;
-      return (this.rulerType === RulerType.Single) ? this.unitSize + this.fontSize : sizeHalf + fontSplit;
-    } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Grow && unit == this.range.end) {
-      padding = value.toString().split('').length * -this.fontSize;
-    } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Responsive && value == offsetHeight) {
-      padding = value.toString().split('').length * -this.fontSize;
-    } else {
-      padding = value.toString().split('').length * this.fontSize;
-    }
-    return value + padding;
-  }
-
-  calcMultiTitleY (index, value) {
-    let padding = 0;
-    let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-    let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
-
-    if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Grow && unit == this.range.end) {
-      let negIndex = (index == 0) ? -1 : index - 1;
-      padding = negIndex * this.fontSize;
-    } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Responsive && value == offsetHeight) {
-      let negIndex = (index == 0) ? -1 : index - 1;
-      padding = negIndex * this.fontSize;
-    } else {
-      padding = (index + 1) * this.fontSize;
-    }
-    return value + padding;
+    return value + offset;
   }
 
   generateVerticalText (value) {
@@ -225,14 +205,26 @@ export class Ng2RulerComponent implements OnInit {
           let deltaX = this.range.start - (this.pPanDelta + event.deltaX);
           let deltaY = this.range.start - (this.pPanDelta + event.deltaY);
 
-          if (this.orientation === Orientation.Horizontal && endRange > offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.range.start) {
-              this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
-              this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
-              this.panDelta = deltaX ;
-          } else if (this.orientation === Orientation.Vertical && endRange > offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.range.start) {
-              this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
-              this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
-              this.panDelta = deltaY;
+          if (this.orientation === Orientation.Horizontal) {
+              if (endRange > offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.range.start){
+                  this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+                  this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
+                  this.panDelta = deltaX ;
+              } else if (-(deltaX) < this.range.start){
+                  this.panDelta = this.range.start;
+              } else if (endRange < offsetWidth) {
+                  this.panDelta = this.range.end;
+              }
+          } else if (this.orientation === Orientation.Vertical) {
+              if (endRange > offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.range.start) {
+                  this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+                  this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
+                  this.panDelta = deltaY;
+              }  else if (-(deltaY) < this.range.start){
+                  this.panDelta = this.range.start;
+              } else if (endRange < offsetHeight) {
+                  this.panDelta = this.range.end;
+              }
           }
       }
   }
@@ -274,6 +266,69 @@ export class Ng2RulerComponent implements OnInit {
           style = 'transform: translateY(' + this.panDelta + 'px)';
       }
 
+      let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
+      return sanitizedStyle;
+  }
+
+  getMultiLineTitleTranslation (value, titleElm) {
+      let style = '';
+      if (this.orientation === Orientation.Vertical) {
+          let y = 0;
+          let x = 0;
+          if (this.tickAlignment === Alignment.Bottom || value == this.range.start) {
+              y = 5;
+          } else if (this.tickAlignment === Alignment.Top) {
+              y = -titleElm.clientHeight - 5;
+          } else if (this.tickAlignment === Alignment.Center) {
+              y = -(titleElm.clientHeight / 2);
+          }
+
+          if (this.textAlignment === Alignment.Left) {
+              x = titleElm.clientWidth;
+          } else if (this.textAlignment === Alignment.Right) {
+              x = this.defaultSize - (titleElm.clientWidth * 2);
+          } else if (this.textAlignment === Alignment.Center) {
+              x = (this.defaultSize / 2) - (titleElm.clientWidth / 2);
+          }
+          style = 'transform: translate('+ x + 'px,' + y + 'px)';
+      }
+
+      let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
+      return sanitizedStyle;
+  }
+
+  getTitleTranslation (value, titleElm) {
+      let style = '';
+      if (this.orientation == Orientation.Horizontal) {
+          let x = 0;
+          let offsetWidth = this.elementRef.nativeElement.offsetWidth;
+          let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
+
+          if (this.rulerMode === RulerMode.Grow && unit == this.range.end || this.rulerMode === RulerMode.Responsive && value == offsetWidth) {
+              x = -titleElm.clientWidth - 5;
+          } else if (unit == this.range.start || this.tickAlignment === Alignment.Right) {
+              x = 5;
+          } else if (this.tickAlignment === Alignment.Left) {
+              x = -titleElm.clientWidth - 5;
+          } else if (this.tickAlignment === Alignment.Center) {
+              x = -(titleElm.clientWidth / 2);
+          }
+
+          let fontSplit = this.fontSize / 4;
+          let sizeHalf = (this.defaultSize * 2) / 2;
+          let single = 0;
+
+          if (this.textAlignment === Alignment.Top) {
+              single = this.defaultSize - this.fontSize;
+          } else if (this.textAlignment === Alignment.Center) {
+              single = (this.defaultSize - this.fontSize) + (this.fontSize / 4);
+          } else if (this.textAlignment === Alignment.Bottom) {
+              single = this.defaultSize - (this.fontSize / 2);
+          }
+
+          let y = (this.rulerType === RulerType.Single) ? single : sizeHalf + fontSplit;
+          style = 'transform: translate(' + (value + x) + 'px,' + y + 'px)';
+      }
       let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
       return sanitizedStyle;
   }

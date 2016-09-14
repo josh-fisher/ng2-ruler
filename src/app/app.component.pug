@@ -1,9 +1,10 @@
+doctype html
 svg:svg([attr.width]="width", [attr.height]="height")
   svg:g.horizontal(*ngIf="isHorizontal()", [attr.style.transform]="getPanTranslation()")
     svg:g.hatching(*ngIf="showHatching")
         svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="hatchSize")
     svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="unitSize")
-    svg:text.title(*ngFor="let line of unitRange", [attr.x]="calcTitleX(line)", [attr.y]="calcTitleY(line)", text-anchor="left")
+    svg:text.title(#htitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getTitleTranslation(line, htitle)")
       svg:tspan {{(unitsPerRange) * line / pixelsPerNUnit}}
     svg:g.phelperGroup(*ngIf="showPHelper")
       svg:line.phelper([attr.x1]="pHelperXPos", y1="0", [attr.x2]="pHelperXPos", [attr.y2]="pHelperHeight")
@@ -13,8 +14,8 @@ svg:svg([attr.width]="width", [attr.height]="height")
     svg:g.hatching(*ngIf="showHatching")
       svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="hatchSize", [attr.y2]="line")
     svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="unitSize", [attr.y2]="line")
-    svg:text.title(*ngFor="let line of unitRange", [attr.y]="calcTitleY(line)", text-anchor="left")
-      svg:tspan(*ngFor="let splitLine of generateVerticalText(line); let i = index", [attr.x]="calcTitleX(line)", [attr.y]="calcMultiTitleY(i, line)") {{splitLine}}
+    svg:text.title(#vtitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getMultiLineTitleTranslation(line, vtitle)")
+      svg:tspan(*ngFor="let splitLine of generateVerticalText(line); let i = index", x="0", [attr.y]="calcMultiTitleY(i, line)") {{splitLine}}
     svg:g.phelperGroup(*ngIf="showPHelper")
       svg:line.phelper([attr.x1]="0", [attr.y1]="pHelperYPos", [attr.x2]="pHelperWidth", [attr.y2]="pHelperYPos")
       svg:text.title([attr.x]="pHelperTitleXPos", [attr.y]="pHelperYPos - 10", text-anchor="left")
