@@ -29,13 +29,13 @@ import {Alignment}                                        from './shared/alignme
   }
 })
 export class Ng2RulerComponent implements OnInit {
-  orientation:        Orientation     = Orientation.Horizontal;
-  rulerType:          RulerType       = RulerType.Single;
+  orientation:        Orientation     = Orientation.Vertical;
+  rulerType:          RulerType       = RulerType.Double;
   justification:      Justify         = Justify.TopOrLeft;
   unitType:           any             = TimeUnit.Seconds;
   rulerMode:          RulerMode       = RulerMode.Responsive;
-  tickAlignment:      Alignment       = Alignment.Right;
-  textAlignment:      Alignment       = Alignment.Center;
+  hTextAlignment:     Alignment       = Alignment.Center;
+  vTextAlignment:     Alignment       = Alignment.Center;
   theme:              Theme           = Theme.Dark;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
@@ -68,7 +68,6 @@ export class Ng2RulerComponent implements OnInit {
   }
 
   ngOnInit () {
-    this.initDefaults();
     this.initSize();
     this.initRange();
     this.initPHelper();
@@ -84,18 +83,6 @@ export class Ng2RulerComponent implements OnInit {
 
   initInput () {
     // todo: implement me!
-  }
-
-  initDefaults () {
-      if (this.orientation === Orientation.Horizontal && this.tickAlignment === Alignment.Top) {
-          this.tickAlignment = Alignment.Left;
-      } else if (this.orientation === Orientation.Horizontal && this.tickAlignment === Alignment.Bottom) {
-          this.tickAlignment = Alignment.Right;
-      } else if (this.orientation === Orientation.Vertical && this.tickAlignment === Alignment.Left) {
-          this.tickAlignment = Alignment.Top;
-      } else if (this.orientation === Orientation.Vertical && this.tickAlignment === Alignment.Right) {
-          this.tickAlignment = Alignment.Bottom;
-      }
   }
 
   initSize () {
@@ -274,22 +261,27 @@ export class Ng2RulerComponent implements OnInit {
       let style = '';
       if (this.orientation === Orientation.Vertical) {
           let y = 0;
-          let x = 0;
-          if (this.tickAlignment === Alignment.Bottom || value == this.range.start) {
+          if (this.vTextAlignment === Alignment.Bottom || value == this.range.start) {
               y = 5;
-          } else if (this.tickAlignment === Alignment.Top) {
+          } else if (this.vTextAlignment === Alignment.Top) {
               y = -titleElm.clientHeight - 5;
-          } else if (this.tickAlignment === Alignment.Center) {
+          } else if (this.vTextAlignment === Alignment.Center) {
               y = -(titleElm.clientHeight / 2);
           }
 
-          if (this.textAlignment === Alignment.Left) {
-              x = titleElm.clientWidth;
-          } else if (this.textAlignment === Alignment.Right) {
-              x = this.defaultSize - (titleElm.clientWidth * 2);
-          } else if (this.textAlignment === Alignment.Center) {
-              x = (this.defaultSize / 2) - (titleElm.clientWidth / 2);
+          let single = 0;
+          let double = 0;
+          if (this.hTextAlignment === Alignment.Left) {
+              single = titleElm.clientWidth;
+              double = single;
+          } else if (this.hTextAlignment === Alignment.Right) {
+              single = this.defaultSize - (titleElm.clientWidth * 2);
+              double = (this.defaultSize * 2) - (titleElm.clientWidth * 2);
+          } else if (this.hTextAlignment === Alignment.Center) {
+              single = (this.defaultSize / 2) - (titleElm.clientWidth / 2);
+              double = ((this.defaultSize * 2) / 2) - (titleElm.clientWidth / 2);
           }
+          let x = (this.rulerType === RulerType.Single) ? single : double;
           style = 'transform: translate('+ x + 'px,' + y + 'px)';
       }
 
@@ -306,27 +298,28 @@ export class Ng2RulerComponent implements OnInit {
 
           if (this.rulerMode === RulerMode.Grow && unit == this.range.end || this.rulerMode === RulerMode.Responsive && value == offsetWidth) {
               x = -titleElm.clientWidth - 5;
-          } else if (unit == this.range.start || this.tickAlignment === Alignment.Right) {
+          } else if (unit == this.range.start || this.hTextAlignment === Alignment.Right) {
               x = 5;
-          } else if (this.tickAlignment === Alignment.Left) {
+          } else if (this.hTextAlignment === Alignment.Left) {
               x = -titleElm.clientWidth - 5;
-          } else if (this.tickAlignment === Alignment.Center) {
+          } else if (this.hTextAlignment === Alignment.Center) {
               x = -(titleElm.clientWidth / 2);
           }
 
-          let fontSplit = this.fontSize / 4;
-          let sizeHalf = (this.defaultSize * 2) / 2;
           let single = 0;
-
-          if (this.textAlignment === Alignment.Top) {
+          let double = 0;
+          if (this.vTextAlignment === Alignment.Top) {
               single = this.defaultSize - this.fontSize;
-          } else if (this.textAlignment === Alignment.Center) {
+              double = single;
+          } else if (this.vTextAlignment === Alignment.Center) {
               single = (this.defaultSize - this.fontSize) + (this.fontSize / 4);
-          } else if (this.textAlignment === Alignment.Bottom) {
+              double = (this.defaultSize * 2) / 2 + (this.fontSize / 4);
+          } else if (this.vTextAlignment === Alignment.Bottom) {
               single = this.defaultSize - (this.fontSize / 2);
+              double = (this.defaultSize * 2) - (this.fontSize / 2);
           }
 
-          let y = (this.rulerType === RulerType.Single) ? single : sizeHalf + fontSplit;
+          let y = (this.rulerType === RulerType.Single) ? single : double;
           style = 'transform: translate(' + (value + x) + 'px,' + y + 'px)';
       }
       let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
