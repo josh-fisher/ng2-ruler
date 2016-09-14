@@ -10,7 +10,6 @@ import { range }                                          from './shared/index';
 import { TimeUnit, MetricUnit, ImperialUnit, MediaUnit }  from './shared/unit.enum';
 import {RulerMode}                                        from './shared/rulermode.enum';
 import {Theme}                                            from './shared/theme.enum';
-import {Justify}                                          from './shared/justify.enum';
 import {Alignment}                                        from './shared/alignment.enum';
 
 @Component({
@@ -29,9 +28,9 @@ import {Alignment}                                        from './shared/alignme
   }
 })
 export class Ng2RulerComponent implements OnInit {
-  orientation:        Orientation     = Orientation.Vertical;
+  orientation:        Orientation     = Orientation.Horizontal;
   rulerType:          RulerType       = RulerType.Double;
-  justification:      Justify         = Justify.TopOrLeft;
+  tickPlacement:      Alignment       = Alignment.Top;
   unitType:           any             = TimeUnit.Seconds;
   rulerMode:          RulerMode       = RulerMode.Responsive;
   hTextAlignment:     Alignment       = Alignment.Center;
@@ -69,6 +68,7 @@ export class Ng2RulerComponent implements OnInit {
 
   ngOnInit () {
     this.initSize();
+    this.initDefaults();
     this.initRange();
     this.initPHelper();
     this.initCursor();
@@ -83,6 +83,18 @@ export class Ng2RulerComponent implements OnInit {
 
   initInput () {
     // todo: implement me!
+  }
+
+  initDefaults () {
+      if (this.hTextAlignment === Alignment.Top) {
+          this.hTextAlignment = Alignment.Left;
+      } else if (this.hTextAlignment === Alignment.Bottom) {
+          this.hTextAlignment = Alignment.Right;
+      } if (this.vTextAlignment === Alignment.Left) {
+          this.vTextAlignment = Alignment.Top;
+      } else if (this.vTextAlignment === Alignment.Right) {
+          this.vTextAlignment = Alignment.Bottom;
+      }
   }
 
   initSize () {
