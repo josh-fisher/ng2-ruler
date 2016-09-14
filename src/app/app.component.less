@@ -9,44 +9,139 @@
   font-weight: normal;
 }
 
+.ibackground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
 svg {
-  background-color: @background;
+  position: relative;
 
   g {
-    .noselect;
+	.noselect;
 
-    .hatch {
-      stroke: @text;
-      stroke-width: 1px;
-    }
-
-    .unit {
-      stroke: @text;
-      stroke-width: 2px;
-    }
-
-    .title {
-      font-size: 11px;
-      fill: @text;
-    }
-
-	.titleGroup {
-	  width: 100%;
-
+	.hatch {
+	  stroke-width: 1px;
 	}
 
-    .phelperGroup {
-      z-index: 2;
+	.unit {
+	  stroke-width: 2px;
+	}
 
-      .phelper {
-        stroke: @highlight;
-        stroke-width: 2px;
-      }
+	.title {
+	  font-size: 11px;
+	}
 
-      .title {
-        fill: @highlight;
-        font-weight: bold;
-      }
-    }
+	.phelperGroup {
+	  z-index: 2;
+
+	  .phelper {
+		stroke-width: 2px;
+	  }
+
+	  .title {
+		font-weight: bold;
+	  }
+	}
   }
 }
+
+.dark {
+  @background: #535353;
+  @text: #c4c4c4;
+  @highlight: #00B95D;
+
+  background-color: @background;
+
+  .hatch {
+	stroke: @text;
+  }
+
+  .unit {
+	stroke: @text;
+  }
+
+  .title {
+	fill: @text;
+  }
+
+  .phelperGroup {
+	.phelper {
+	  stroke: @highlight;
+	}
+
+	.title {
+	  fill: @highlight;
+	}
+  }
+}
+
+.light {
+  @background: #c4c4c4;
+  @text: #535353;
+  @highlight: #b9005c;
+
+  background-color: @background;
+
+  .hatch {
+	stroke: @text;
+  }
+
+  .unit {
+	stroke: @text;
+  }
+
+  .title {
+	fill: @text;
+  }
+
+  .phelperGroup {
+	.phelper {
+	  stroke: @highlight;
+	}
+
+	.title {
+	  fill: @highlight;
+	}
+  }
+}
+
+.metal {
+  .dark;
+  background: @background url("../assets/images/metal/tileable-metal-textures-4.jpg");
+}
+
+.wood_whitewashed {
+  .light;
+  background: @background url("../assets/images/wood/Melamine-wood-001.png") 0 0 repeat;
+}
+
+.wood_natural {
+  .light;
+  background: @background url("../assets/images/wood/Melamine-wood-003.png") 0 0 repeat;
+}
+
+.wood_honey {
+  .light;
+  background: @background url("../assets/images/wood/Melamine-wood-005.png") 0 0 repeat;
+}
+
+.wood_oak {
+  .dark;
+  background: @background url("../assets/images/wood/Melamine-wood-004.png") 0 0 repeat;
+}
+
+.wood_cherry {
+  .dark;
+  background: @background url("../assets/images/wood/Melamine-wood-002.png") 0 0 repeat;
+}
+
+.wood_ebony {
+  .dark;
+  background: @background url("../assets/images/wood/Melamine-wood-006.png") 0 0 repeat;
+}
+
+

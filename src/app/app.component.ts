@@ -35,7 +35,7 @@ export class Ng2RulerComponent implements OnInit {
   rulerMode:          RulerMode       = RulerMode.Responsive;
   hTextAlignment:     Alignment       = Alignment.Center;
   vTextAlignment:     Alignment       = Alignment.Center;
-  theme:              Theme           = Theme.Dark;
+  theme:              Theme           = Theme.Wood_WhiteWashed;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
   unitsPerRange:      number          = 20;
@@ -62,6 +62,7 @@ export class Ng2RulerComponent implements OnInit {
   allowDragPan:       boolean         = true;
   allowWheelPan:      boolean         = true;
   showHatching:       boolean         = true;
+  hasBackground:      boolean         = false;
 
   constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
   }
@@ -94,6 +95,10 @@ export class Ng2RulerComponent implements OnInit {
           this.vTextAlignment = Alignment.Top;
       } else if (this.vTextAlignment === Alignment.Right) {
           this.vTextAlignment = Alignment.Bottom;
+      }
+
+      if (this.theme > 1) {
+          this.hasBackground = true;
       }
   }
 
@@ -336,5 +341,9 @@ export class Ng2RulerComponent implements OnInit {
       }
       let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
       return sanitizedStyle;
+  }
+
+  getThemeClassName () {
+      return Theme[this.theme].toLowerCase();
   }
 }
