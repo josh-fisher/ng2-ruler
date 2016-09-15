@@ -2,8 +2,8 @@ doctype html
 svg:svg([attr.width]="width", [attr.height]="height", [ngClass]="getThemeClassName()")
   svg:g.horizontal(*ngIf="isHorizontal()", [attr.style.transform]="getPanTranslation()")
     svg:g.hatching(*ngIf="showHatching")
-        svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="hatchSize")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="0", [attr.x2]="line", [attr.y2]="unitSize")
+        svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="hatchTickPositions.y1", [attr.x2]="line", [attr.y2]="hatchTickPositions.y2")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="unitTickPositions.y1", [attr.x2]="line", [attr.y2]="unitTickPositions.y2")
     svg:text.title(#htitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getTitleTranslation(line, htitle)")
       svg:tspan {{(unitsPerRange) * line / pixelsPerNUnit}}
     svg:g.phelperGroup(*ngIf="showPHelper")
@@ -12,8 +12,8 @@ svg:svg([attr.width]="width", [attr.height]="height", [ngClass]="getThemeClassNa
         svg:tspan {{pHelperTitle}}
   svg:g.vertical(*ngIf="!isHorizontal()", [attr.style.transform]="getPanTranslation()")
     svg:g.hatching(*ngIf="showHatching")
-      svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="hatchSize", [attr.y2]="line")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="0", [attr.y1]="line", [attr.x2]="unitSize", [attr.y2]="line")
+      svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="hatchTickPositions.x1", [attr.y1]="line", [attr.x2]="hatchTickPositions.x2", [attr.y2]="line")
+    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="unitTickPositions.x1", [attr.y1]="line", [attr.x2]="unitTickPositions.x2", [attr.y2]="line")
     svg:text.title(#vtitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getMultiLineTitleTranslation(line, vtitle)")
       svg:tspan(*ngFor="let splitLine of generateVerticalText(line); let i = index", x="0", [attr.y]="calcMultiTitleY(i, line)") {{splitLine}}
     svg:g.phelperGroup(*ngIf="showPHelper")

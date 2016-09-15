@@ -29,12 +29,12 @@ import {Alignment}                                        from './shared/alignme
 })
 export class Ng2RulerComponent implements OnInit {
   orientation:        Orientation     = Orientation.Horizontal;
-  rulerType:          RulerType       = RulerType.Double;
-  tickPlacement:      Alignment       = Alignment.Top;
+  rulerType:          RulerType       = RulerType.Single;
+  tickPlacement:      Alignment       = Alignment.Bottom;
   unitType:           any             = TimeUnit.Seconds;
   rulerMode:          RulerMode       = RulerMode.Responsive;
   hTextAlignment:     Alignment       = Alignment.Center;
-  vTextAlignment:     Alignment       = Alignment.Center;
+  vTextAlignment:     Alignment       = Alignment.Top;
   theme:              Theme           = Theme.Wood_WhiteWashed;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
@@ -63,6 +63,8 @@ export class Ng2RulerComponent implements OnInit {
   allowWheelPan:      boolean         = true;
   showHatching:       boolean         = true;
   hasBackground:      boolean         = false;
+  unitTickPositions:  Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
+  hatchTickPositions: Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
 
   constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
   }
@@ -70,6 +72,7 @@ export class Ng2RulerComponent implements OnInit {
   ngOnInit () {
     this.initSize();
     this.initDefaults();
+    this.initTickPositions();
     this.initRange();
     this.initPHelper();
     this.initCursor();
@@ -345,5 +348,30 @@ export class Ng2RulerComponent implements OnInit {
 
   getThemeClassName () {
       return Theme[this.theme].toLowerCase();
+  }
+
+  initTickPositions () {
+      let ux1 = 0;
+      let ux2 = this.unitSize;
+      let uy1 = 0;
+      let uy2 = this.unitSize;
+      let hx1 = 0;
+      let hx2 = this.hatchSize;
+      let hy1 = 0;
+      let hy2 = this.hatchSize;
+      if (this.rulerType === RulerType.Single && this.tickPlacement === Alignment.Bottom) {
+          uy1 = this.defaultSize;
+          uy2 = this.defaultSize - this.unitSize;
+          hy1 = this.defaultSize;
+          hy2 = this.defaultSize - this.hatchSize;
+      }
+      if (this.rulerType === RulerType.Single && this.tickPlacement === Alignment.Right) {
+          ux1 = this.defaultSize;
+          ux2 = this.defaultSize - this.unitSize;
+          hx1 = this.defaultSize;
+          hx2 = this.defaultSize - this.hatchSize;
+      }
+      this.unitTickPositions = {x1: ux1, x2: ux2, y1: uy1, y2: uy2};
+      this.hatchTickPositions = {x1: hx1, x2: hx2, y1: hy1, y2: hy2};
   }
 }
