@@ -1,4 +1,5 @@
 export enum RulerMode {
     Grow,
-    Responsive
+    Responsive,
+    Fit
 }

@@ -32,14 +32,14 @@ export class Ng2RulerComponent implements OnInit {
   orientation:        Orientation     = Orientation.Horizontal;
   rulerType:          RulerType       = RulerType.Double;
   tickPlacement:      Alignment       = Alignment.Bottom;
-  unitType:           any             = Unit.Pixels;
-  rulerMode:          RulerMode       = RulerMode.Responsive;
+  unitType:           any             = Unit.Seconds;
+  rulerMode:          RulerMode       = RulerMode.Fit;
   hTextAlignment:     Alignment       = Alignment.Center;
   vTextAlignment:     Alignment       = Alignment.Center;
   theme:              Theme           = Theme.Wood_WhiteWashed;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
-  unitsPerRange:      number          = 20;
+  unitsPerRange:      number          = 10;
   hatchMarkSpacing:   number          = 100;
   width:              string          = '0px';
   height:             string          = '0px';
@@ -48,7 +48,7 @@ export class Ng2RulerComponent implements OnInit {
   unitSize:           number          = this.defaultSize / 3;
   hatchRange:         Array<number>   = [];
   unitRange:          Array<number>   = [];
-  range:              any             = { start: 0, end: 50 };
+  range:              any             = { start: 0, end: 60 };
   pHelperXPos:        number          = 0;
   pHelperYPos:        number          = 0;
   pHelperHeight:      number          = 0;
@@ -66,7 +66,7 @@ export class Ng2RulerComponent implements OnInit {
   hasBackground:      boolean         = false;
   unitTickPositions:  Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
   hatchTickPositions: Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
-  unit:               any             = {pixels: 0, symbol: ''};
+  unit:               any             = {pixelsPerNUnit: 0, unitsPerRange: 0, hatchMarksPerNUnit: 0, symbol: ''};
   showUnits:          boolean         = false;
 
   constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer, private units: Units) {
@@ -121,11 +121,18 @@ export class Ng2RulerComponent implements OnInit {
           this.pixelsPerNUnit = this.unit.pixelsPerNUnit;
           this.unitsPerRange = this.unit.unitsPerRange;
       }
+
+      if (this.rulerMode === RulerMode.Fit && this.orientation === Orientation.Horizontal) {
+          this.pixelsPerNUnit = (this.elementRef.nativeElement.offsetWidth / this.range.end) * this.unitsPerRange;
+      } else if (this.rulerMode === RulerMode.Fit && this.orientation === Orientation.Vertical) {
+          this.pixelsPerNUnit = (this.elementRef.nativeElement.offsetHeight / this.range.end) * this.unitsPerRange;
+      }
+
       this.hatchMarkSpacing = this.pixelsPerNUnit / this.unit.hatchMarksPerNUnit;
   }
 
   initSize () {
-    if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Responsive) {
+    if (this.orientation === Orientation.Horizontal && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
       this.width = '100%';
       this.height = (this.rulerType == RulerType.Single) ? this.defaultSize + 'px' : (this.defaultSize * 2) + 'px';
     } else if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Grow) {
@@ -147,13 +154,12 @@ export class Ng2RulerComponent implements OnInit {
     let offsetWidth = this.elementRef.nativeElement.offsetWidth;
     let offsetHeight = this.elementRef.nativeElement.offsetHeight;
 
-    if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Responsive) {
+    if (this.orientation === Orientation.Horizontal && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
       this.hatchRange = range(this.range.start, offsetWidth, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, offsetWidth, this.pixelsPerNUnit);
-    } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Responsive) {
+    } else if (this.orientation === Orientation.Vertical && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
       this.hatchRange = range(this.range.start, offsetHeight, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, offsetHeight, this.pixelsPerNUnit);
-    } else {
       let endRange = ((this.range.end * this.pixelsPerNUnit) + this.pixelsPerNUnit) / this.unitsPerRange;
       this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, endRange , this.pixelsPerNUnit);

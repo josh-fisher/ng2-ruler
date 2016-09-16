@@ -12,7 +12,7 @@ export class Units {
         "feet":         { pixelsPerNUnit: 1152, unitsPerRange: 1, hatchMarksPerNUnit: 12, symbol: 'ft' },
         "pixels":       { pixelsPerNUnit: 100, unitsPerRange: 100, hatchMarksPerNUnit: 10, symbol: 'px' },
         "picas":        { pixelsPerNUnit: 160, unitsPerRange: 10, hatchMarksPerNUnit: 10, symbol: 'pc' },
-        "points":       { pixelsPerNUnit: 133, unitsPerRange: 100, hatchMarksPerNUnit: 13.3,symbol: 'pt' }
+        "points":       { pixelsPerNUnit: 133, unitsPerRange: 100, hatchMarksPerNUnit: 13.3, symbol: 'pt' }
     };
 
     getUnit(type: Unit) {
