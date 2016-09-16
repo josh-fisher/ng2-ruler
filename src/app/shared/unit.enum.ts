@@ -1,20 +1,11 @@
-export enum MetricUnit {
+export enum Unit {
   Centimeters,
   Millimeters,
-}
-
-export enum ImperialUnit {
   Thou,
   Inches,
   Feet,
-}
-
-export enum TimeUnit {
   Seconds,
-  Milliseconds
-}
-
-export enum MediaUnit {
+  Milliseconds,
   Pixels,
   Picas,
   Points

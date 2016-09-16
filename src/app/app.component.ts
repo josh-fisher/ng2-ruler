@@ -7,10 +7,11 @@ import { DomSanitizer  } from '@angular/platform-browser';
 import { Orientation }                                    from './shared/orientation.enum';
 import { RulerType }                                      from './shared/rulertype.enum';
 import { range }                                          from './shared/index';
-import { TimeUnit, MetricUnit, ImperialUnit, MediaUnit }  from './shared/unit.enum';
+import { Unit }                                           from './shared/unit.enum';
 import {RulerMode}                                        from './shared/rulermode.enum';
 import {Theme}                                            from './shared/theme.enum';
 import {Alignment}                                        from './shared/alignment.enum';
+import {Units}                                            from './shared/units.service';
 
 @Component({
   selector: 'ng2-ruler',
@@ -29,17 +30,17 @@ import {Alignment}                                        from './shared/alignme
 })
 export class Ng2RulerComponent implements OnInit {
   orientation:        Orientation     = Orientation.Horizontal;
-  rulerType:          RulerType       = RulerType.Single;
+  rulerType:          RulerType       = RulerType.Double;
   tickPlacement:      Alignment       = Alignment.Bottom;
-  unitType:           any             = TimeUnit.Seconds;
+  unitType:           any             = Unit.Pixels;
   rulerMode:          RulerMode       = RulerMode.Responsive;
   hTextAlignment:     Alignment       = Alignment.Center;
-  vTextAlignment:     Alignment       = Alignment.Top;
+  vTextAlignment:     Alignment       = Alignment.Center;
   theme:              Theme           = Theme.Wood_WhiteWashed;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
   unitsPerRange:      number          = 20;
-  hatchMarksPerNUnit: number          = 10;
+  hatchMarkSpacing:   number          = 100;
   width:              string          = '0px';
   height:             string          = '0px';
   fontSize:           number          = 11;
@@ -47,7 +48,7 @@ export class Ng2RulerComponent implements OnInit {
   unitSize:           number          = this.defaultSize / 3;
   hatchRange:         Array<number>   = [];
   unitRange:          Array<number>   = [];
-  range:              any             = { start: 0, end: 500 };
+  range:              any             = { start: 0, end: 50 };
   pHelperXPos:        number          = 0;
   pHelperYPos:        number          = 0;
   pHelperHeight:      number          = 0;
@@ -65,8 +66,10 @@ export class Ng2RulerComponent implements OnInit {
   hasBackground:      boolean         = false;
   unitTickPositions:  Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
   hatchTickPositions: Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
+  unit:               any             = {pixels: 0, symbol: ''};
+  showUnits:          boolean         = false;
 
-  constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer) {
+  constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer, private units: Units) {
   }
 
   ngOnInit () {
@@ -100,9 +103,25 @@ export class Ng2RulerComponent implements OnInit {
           this.vTextAlignment = Alignment.Bottom;
       }
 
+      if (this.tickPlacement === Alignment.Right) {
+        this.tickPlacement = Alignment.Bottom;
+      } else if (this.tickPlacement === Alignment.Left) {
+          this.tickPlacement = Alignment.Top;
+      } else if (this.tickPlacement !== Alignment.Top && this.tickPlacement !== Alignment.Bottom) {
+          this.tickPlacement = Alignment.Top;
+      }
+
       if (this.theme > 1) {
           this.hasBackground = true;
       }
+
+      this.unit = this.units.getUnit(this.unitType);
+
+      if (this.unitType !== Unit.Seconds && this.unitType !== Unit.Milliseconds) {
+          this.pixelsPerNUnit = this.unit.pixelsPerNUnit;
+          this.unitsPerRange = this.unit.unitsPerRange;
+      }
+      this.hatchMarkSpacing = this.pixelsPerNUnit / this.unit.hatchMarksPerNUnit;
   }
 
   initSize () {
@@ -129,14 +148,14 @@ export class Ng2RulerComponent implements OnInit {
     let offsetHeight = this.elementRef.nativeElement.offsetHeight;
 
     if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Responsive) {
-      this.hatchRange = range(this.range.start, offsetWidth, this.hatchMarksPerNUnit);
+      this.hatchRange = range(this.range.start, offsetWidth, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, offsetWidth, this.pixelsPerNUnit);
     } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Responsive) {
-      this.hatchRange = range(this.range.start, offsetHeight, this.hatchMarksPerNUnit);
+      this.hatchRange = range(this.range.start, offsetHeight, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, offsetHeight, this.pixelsPerNUnit);
     } else {
       let endRange = ((this.range.end * this.pixelsPerNUnit) + this.pixelsPerNUnit) / this.unitsPerRange;
-      this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+      this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, endRange , this.pixelsPerNUnit);
     }
   }
@@ -189,6 +208,9 @@ export class Ng2RulerComponent implements OnInit {
   generateVerticalText (value) {
     var newValue = this.unitsPerRange * value / this.pixelsPerNUnit;
     var lines = newValue.toString().split('');
+    if (this.showUnits) {
+      lines.push(this.unit.symbol);
+    }
     return lines;
   }
 
@@ -198,7 +220,7 @@ export class Ng2RulerComponent implements OnInit {
           let unit =  (this.unitsPerRange) * (position - this.panDelta) / this.pixelsPerNUnit;
           this.pHelperXPos = (this.orientation === Orientation.Horizontal) ? event.offsetX - this.panDelta: 0;
           this.pHelperYPos = (this.orientation === Orientation.Vertical) ? event.offsetY - this.panDelta: 0;
-          this.pHelperTitle = unit;
+          this.pHelperTitle = Math.round(unit * 100) / 100;
       }
   }
 
@@ -214,23 +236,23 @@ export class Ng2RulerComponent implements OnInit {
 
           if (this.orientation === Orientation.Horizontal) {
               if (endRange > offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.range.start){
-                  this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+                  this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
                   this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
                   this.panDelta = deltaX ;
               } else if (-(deltaX) < this.range.start){
                   this.panDelta = this.range.start;
-              } else if (endRange < offsetWidth) {
-                  this.panDelta = this.range.end;
+              } else if (-(deltaX) > offsetWidth) {
+                  this.panDelta = -widthDiff;
               }
           } else if (this.orientation === Orientation.Vertical) {
               if (endRange > offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.range.start) {
-                  this.hatchRange = range(this.range.start, endRange, this.hatchMarksPerNUnit);
+                  this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
                   this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
                   this.panDelta = deltaY;
               }  else if (-(deltaY) < this.range.start){
                   this.panDelta = this.range.start;
-              } else if (endRange < offsetHeight) {
-                  this.panDelta = this.range.end;
+              } else if (-(deltaY) > offsetHeight) {
+                  this.panDelta = -heightDiff;
               }
           }
       }
@@ -373,5 +395,12 @@ export class Ng2RulerComponent implements OnInit {
       }
       this.unitTickPositions = {x1: ux1, x2: ux2, y1: uy1, y2: uy2};
       this.hatchTickPositions = {x1: hx1, x2: hx2, y1: hy1, y2: hy2};
+  }
+
+  formatTitle (value) {
+    let newValue = (this.unitsPerRange) * value / this.pixelsPerNUnit;
+    newValue += (this.showUnits) ? this.unit.symbol : '';
+    newValue = Math.round(newValue * 100) / 100;
+    return newValue;
   }
 }
