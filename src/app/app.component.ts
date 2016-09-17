@@ -32,14 +32,14 @@ export class Ng2RulerComponent implements OnInit {
   orientation:        Orientation     = Orientation.Horizontal;
   rulerType:          RulerType       = RulerType.Double;
   tickPlacement:      Alignment       = Alignment.Bottom;
-  unitType:           any             = Unit.Seconds;
-  rulerMode:          RulerMode       = RulerMode.Fit;
+  unitType:           any             = Unit.Inches;
+  rulerMode:          RulerMode       = RulerMode.Responsive;
   hTextAlignment:     Alignment       = Alignment.Center;
   vTextAlignment:     Alignment       = Alignment.Center;
   theme:              Theme           = Theme.Wood_WhiteWashed;
   defaultSize:        number          = 24;
   pixelsPerNUnit:     number          = 200;
-  unitsPerRange:      number          = 10;
+  unitsPerRange:      number          = 20;
   hatchMarkSpacing:   number          = 100;
   width:              string          = '0px';
   height:             string          = '0px';
@@ -48,7 +48,7 @@ export class Ng2RulerComponent implements OnInit {
   unitSize:           number          = this.defaultSize / 3;
   hatchRange:         Array<number>   = [];
   unitRange:          Array<number>   = [];
-  range:              any             = { start: 0, end: 60 };
+  range:              any             = { start: 0, end: 24 };
   pHelperXPos:        number          = 0;
   pHelperYPos:        number          = 0;
   pHelperHeight:      number          = 0;
@@ -78,13 +78,11 @@ export class Ng2RulerComponent implements OnInit {
     this.initTickPositions();
     this.initRange();
     this.initPHelper();
-    this.initCursor();
 
     let self = this;
     window.addEventListener('resize', () => {
       self.initSize();
       self.initRange();
-      self.initCursor();
     });
   }
 
@@ -164,17 +162,6 @@ export class Ng2RulerComponent implements OnInit {
       this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
       this.unitRange = range(this.range.start, endRange , this.pixelsPerNUnit);
     }
-  }
-
-  initCursor () {
-      let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-      let offsetWidth = this.elementRef.nativeElement.offsetWidth;
-      let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
-
-      if (this.orientation === Orientation.Horizontal && endRange > offsetWidth ||
-          this.orientation === Orientation.Vertical && endRange > offsetHeight) {
-          this.elementRef.nativeElement.querySelector('svg').style.cursor = '-webkit-grabbing';
-      }
   }
 
   initPHelper () {
@@ -375,7 +362,17 @@ export class Ng2RulerComponent implements OnInit {
   }
 
   getThemeClassName () {
-      return Theme[this.theme].toLowerCase();
+      let offsetHeight = this.elementRef.nativeElement.offsetHeight;
+      let offsetWidth = this.elementRef.nativeElement.offsetWidth;
+      let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
+      let grabbing = '';
+
+      if (this.orientation === Orientation.Horizontal && endRange > offsetWidth ||
+          this.orientation === Orientation.Vertical && endRange > offsetHeight) {
+          grabbing = 'grabbing'
+      }
+
+      return Theme[this.theme].toLowerCase() + ' ' + grabbing;
   }
 
   initTickPositions () {
