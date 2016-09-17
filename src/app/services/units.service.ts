@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {Unit} from "./unit.enum";
+import {Unit} from "../shared/enums/unit.enum";
 
 @Injectable()
 export class Units {

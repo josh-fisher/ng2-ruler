@@ -3,8 +3,8 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
-import { Ng2RulerComponent } from './app.component';
-import { Units } from './shared/units.service';
+import { Ng2RulerComponent } from './components/app.component';
+import { Units } from './services/units.service';
 
 @NgModule({
   declarations: [

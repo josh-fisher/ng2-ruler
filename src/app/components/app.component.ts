@@ -4,14 +4,14 @@ import { Component, ElementRef, OnInit }  from '@angular/core';
 import { DomSanitizer  } from '@angular/platform-browser';
 // import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 
-import { Orientation }                                    from './shared/orientation.enum';
-import { RulerType }                                      from './shared/rulertype.enum';
-import { range }                                          from './shared/index';
-import { Unit }                                           from './shared/unit.enum';
-import {RulerMode}                                        from './shared/rulermode.enum';
-import {Theme}                                            from './shared/theme.enum';
-import {Alignment}                                        from './shared/alignment.enum';
-import {Units}                                            from './shared/units.service';
+import { Orientation }                                    from '../shared/enums/orientation.enum';
+import { RulerType }                                      from '../shared/enums/rulertype.enum';
+import { range }                                          from '../shared/index';
+import { Unit }                                           from '../shared/enums/unit.enum';
+import {RulerMode}                                        from '../shared/enums/rulermode.enum';
+import {Theme}                                            from '../shared/enums/theme.enum';
+import {Alignment}                                        from '../shared/enums/alignment.enum';
+import {Units}                                            from '../services/units.service';
 
 @Component({
   selector: 'ng2-ruler',
