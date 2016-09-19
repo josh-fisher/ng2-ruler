@@ -1,4 +1,4 @@
-svg:svg([attr.width]="width", [attr.height]="height", [ngClass]="getThemeClassName()")
+svg:svg([attr.width]="width", [attr.height]="height", [attr.class]="getThemeClassName()")
   svg:g.units(ng2-ruler-units, [unit]="unit", [attr.style.transform]="getPanTranslation()")
   svg:g.subunits(ng2-ruler-units, *ngFor="let iunit of unit.hatchUnits", [unit]="iunit", [parentUnit]="unit", [attr.style.transform]="getPanTranslation()")
   svg:g.phelperGroup(*ngIf="allowPHelper")

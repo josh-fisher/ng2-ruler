@@ -204,4 +204,12 @@ export class UnitsComponent implements OnInit {
     let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(hatchStyle);
     return sanitizedStyle;
   }
+
+  unitMouseEnter (event, elm) {
+    elm.style.opacity = 0;
+  }
+
+  unitMouseLeave (event, elm) {
+    console.log(event);
+  }
 }
