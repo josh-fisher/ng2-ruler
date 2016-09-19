@@ -1,3 +1,12 @@
+export class Range {
+  start: number = 0;
+  end: number = 0;
+  constructor (start: number, end: number) {
+    this.start = start;
+    this.end = end;
+  }
+}
+
 // from d3 library: https://github.com/d3/d3-array/blob/master/src/range.js
 export function range(start, stop, step) {
   start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;

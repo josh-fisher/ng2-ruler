@@ -1,250 +1,205 @@
 import 'hammerjs';
 
-import { Component, ElementRef, OnInit }  from '@angular/core';
+import {Component, ElementRef, OnInit}  from '@angular/core';
 import { DomSanitizer  } from '@angular/platform-browser';
-// import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 
 import { Orientation }                                    from '../shared/enums/orientation.enum';
 import { RulerType }                                      from '../shared/enums/rulertype.enum';
-import { range }                                          from '../shared/index';
-import { Unit }                                           from '../shared/enums/unit.enum';
 import {RulerMode}                                        from '../shared/enums/rulermode.enum';
 import {Theme}                                            from '../shared/enums/theme.enum';
 import {Alignment}                                        from '../shared/enums/alignment.enum';
-import {Units}                                            from '../services/units.service';
+import {RulerService}     from '../services/ruler.service';
+import {UnitType} from '../shared/enums/unit.enum';
+import {Unit, UnitsService} from '../services/units.service';
+import {range} from "../shared/range";
+import {Line} from "../shared/line";
 
 @Component({
   selector: 'ng2-ruler',
   templateUrl: './app.component.pug',
   styleUrls: ['./app.component.less'],
   host: {
-    '(mousemove)': 'onHostMouseMove($event)',
-    '(panleft)': 'onHostPan($event)',
-    '(panright)': 'onHostPan($event)',
-    '(panup)': 'onHostPan($event)',
-    '(pandown)': 'onHostPan($event)',
-    '(panstart)': 'onHostPanStart($event)',
-    '(panend)': 'onHostPanEnd($event)',
+    '(mousemove)':  'onHostMouseMove($event)',
+    '(panleft)':    'onHostPan($event)',
+    '(panright)':   'onHostPan($event)',
+    '(panup)':      'onHostPan($event)',
+    '(pandown)':    'onHostPan($event)',
+    '(panstart)':   'onHostPanStart($event)',
+    '(panend)':     'onHostPanEnd($event)',
     '(mousewheel)': 'onHostMouseWheel($event)'
-  }
+  },
+  inputs: ['unitType', 'unit', 'orientation', 'rulerMode', 'rulerType',
+    'hTextAlignment', 'vTextAlignment', 'hatchPlacement', 'defaultSize',
+    'defaultFontSize', 'range', 'theme']
 })
 export class Ng2RulerComponent implements OnInit {
-  orientation:        Orientation     = Orientation.Horizontal;
-  rulerType:          RulerType       = RulerType.Double;
-  tickPlacement:      Alignment       = Alignment.Bottom;
-  unitType:           any             = Unit.Inches;
-  rulerMode:          RulerMode       = RulerMode.Responsive;
-  hTextAlignment:     Alignment       = Alignment.Center;
-  vTextAlignment:     Alignment       = Alignment.Center;
-  theme:              Theme           = Theme.Wood_WhiteWashed;
-  defaultSize:        number          = 24;
-  pixelsPerNUnit:     number          = 200;
-  unitsPerRange:      number          = 20;
-  hatchMarkSpacing:   number          = 100;
-  width:              string          = '0px';
-  height:             string          = '0px';
-  fontSize:           number          = 11;
-  hatchSize:          number          = this.defaultSize / 5;
-  unitSize:           number          = this.defaultSize / 3;
-  hatchRange:         Array<number>   = [];
-  unitRange:          Array<number>   = [];
-  range:              any             = { start: 0, end: 24 };
-  pHelperXPos:        number          = 0;
-  pHelperYPos:        number          = 0;
-  pHelperHeight:      number          = 0;
-  pHelperWidth:       number          = 0;
-  pHelperTitle:       number          = 0;
-  pHelperTitleXPos:   number          = 0;
-  pHelperTitleYPos:   number          = 0;
-  showPHelper:        boolean         = true;
-  panning:            boolean         = false;
-  panDelta:           number          = 0;
-  pPanDelta:          number          = 0;
-  allowDragPan:       boolean         = true;
-  allowWheelPan:      boolean         = true;
-  showHatching:       boolean         = true;
-  hasBackground:      boolean         = false;
-  unitTickPositions:  Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
-  hatchTickPositions: Object          = {x1: 0, x2: 0, y1: 0, y2: 0};
-  unit:               any             = {pixelsPerNUnit: 0, unitsPerRange: 0, hatchMarksPerNUnit: 0, symbol: ''};
-  showUnits:          boolean         = false;
+  unitType:                   UnitType        = UnitType.Inches;
+  rulerService:               RulerService;
 
-  constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer, private units: Units) {
+  private unit:               Unit;
+  private hatchUnits:         Array<Unit>     = [];
+  private width:              string          = '0px';
+  private height:             string          = '0px';
+  private pHelperTitle:       string          = '';
+  private pHelperTitlePos:    any             = {x1:0, y1:0};
+  private pHelperLine:        Line            = new Line(0,0,0,0);
+  private showPHelper:        boolean         = true;
+  private panning:            boolean         = false;
+  private panDelta:           number          = 0;
+  private pPanDelta:          number          = 0;
+  private allowDragPan:       boolean         = true;
+  private allowWheelPan:      boolean         = true;
+  private hasBackground:      boolean         = false;
+
+  constructor (private elementRef: ElementRef, private sanitizer: DomSanitizer,
+               private unitsService: UnitsService, rulerService: RulerService) {
+    this.rulerService = rulerService;
   }
 
   ngOnInit () {
+    this.initUnits();
     this.initSize();
     this.initDefaults();
-    this.initTickPositions();
-    this.initRange();
     this.initPHelper();
 
     let self = this;
     window.addEventListener('resize', () => {
       self.initSize();
-      self.initRange();
     });
   }
 
+  /*
   initInput () {
-    // todo: implement me!
+    this.rulerService.orientation = (this.orientation) ? this.orientation : Orientation.Horizontal;
+    this.rulerService.rulerMode = (this.rulerMode) ? this.rulerMode : RulerMode.Responsive;
+    this.rulerService.rulerType = (this.rulerType) ? this.rulerType : RulerType.Double;
+    this.rulerService.hTextAlignment = (this.hTextAlignment) ? this.hTextAlignment : Alignment.Center;
+    this.rulerService.vTextAlignment = (this.vTextAlignment) ? this.vTextAlignment : Alignment.Center;
+    this.rulerService.hatchPlacement = (this.hatchPlacement) ? this.hatchPlacement : Alignment.Bottom;
+    this.rulerService.defaultSize = (this.defaultSize) ? this.defaultSize : 24;
+    this.rulerService.fontSize = (this.fontSize) ? this.fontSize : 11;
+    this.rulerService.hatchSize = (this.hatchSize) ? this.hatchSize : this.defaultSize / 3;
+    this.rulerService.range = (this.range && this.range.length == 2) ? new Range(this.range[0], this.range[1]) : new Range(0, 12);
+  }
+  */
+
+  initUnits () {
+    this.unit = this.unitsService.getUnit(this.unitType);
+    this.hatchUnits = (this.hatchUnits) ? this.hatchUnits : this.unit.hatchUnits;
   }
 
   initDefaults () {
-      if (this.hTextAlignment === Alignment.Top) {
-          this.hTextAlignment = Alignment.Left;
-      } else if (this.hTextAlignment === Alignment.Bottom) {
-          this.hTextAlignment = Alignment.Right;
-      } if (this.vTextAlignment === Alignment.Left) {
-          this.vTextAlignment = Alignment.Top;
-      } else if (this.vTextAlignment === Alignment.Right) {
-          this.vTextAlignment = Alignment.Bottom;
+      if (this.rulerService.hTextAlignment === Alignment.Top) {
+          this.rulerService.hTextAlignment = Alignment.Left;
+      } else if (this.rulerService.hTextAlignment === Alignment.Bottom) {
+          this.rulerService.hTextAlignment = Alignment.Right;
+      } if (this.rulerService.vTextAlignment === Alignment.Left) {
+          this.rulerService.vTextAlignment = Alignment.Top;
+      } else if (this.rulerService.vTextAlignment === Alignment.Right) {
+          this.rulerService.vTextAlignment = Alignment.Bottom;
       }
 
-      if (this.tickPlacement === Alignment.Right) {
-        this.tickPlacement = Alignment.Bottom;
-      } else if (this.tickPlacement === Alignment.Left) {
-          this.tickPlacement = Alignment.Top;
-      } else if (this.tickPlacement !== Alignment.Top && this.tickPlacement !== Alignment.Bottom) {
-          this.tickPlacement = Alignment.Top;
+      if (this.rulerService.orientation === Orientation.Horizontal && this.rulerService.hatchPlacement === Alignment.Right) {
+        this.rulerService.hatchPlacement = Alignment.Bottom;
+      } else if (this.rulerService.orientation === Orientation.Horizontal && this.rulerService.hatchPlacement === Alignment.Left) {
+          this.rulerService.hatchPlacement = Alignment.Top;
+      } else if (this.rulerService.hatchPlacement !== Alignment.Top && this.rulerService.hatchPlacement !== Alignment.Bottom) {
+          this.rulerService.hatchPlacement = Alignment.Top;
+      } else if (this.rulerService.orientation === Orientation.Vertical && this.rulerService.hatchPlacement === Alignment.Top) {
+        this.rulerService.hatchPlacement = Alignment.Left;
+      } else if (this.rulerService.orientation === Orientation.Vertical && this.rulerService.hatchPlacement === Alignment.Bottom) {
+        this.rulerService.hatchPlacement = Alignment.Right;
       }
 
-      if (this.theme > 1) {
+      if (this.rulerService.theme > 1) {
           this.hasBackground = true;
       }
-
-      this.unit = this.units.getUnit(this.unitType);
-
-      if (this.unitType !== Unit.Seconds && this.unitType !== Unit.Milliseconds) {
-          this.pixelsPerNUnit = this.unit.pixelsPerNUnit;
-          this.unitsPerRange = this.unit.unitsPerRange;
-      }
-
-      if (this.rulerMode === RulerMode.Fit && this.orientation === Orientation.Horizontal) {
-          this.pixelsPerNUnit = (this.elementRef.nativeElement.offsetWidth / this.range.end) * this.unitsPerRange;
-      } else if (this.rulerMode === RulerMode.Fit && this.orientation === Orientation.Vertical) {
-          this.pixelsPerNUnit = (this.elementRef.nativeElement.offsetHeight / this.range.end) * this.unitsPerRange;
-      }
-
-      this.hatchMarkSpacing = this.pixelsPerNUnit / this.unit.hatchMarksPerNUnit;
   }
 
   initSize () {
-    if (this.orientation === Orientation.Horizontal && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
+    if (this.rulerService.orientation === Orientation.Horizontal && (this.rulerService.rulerMode === RulerMode.Responsive || this.rulerService.rulerMode === RulerMode.Fit)) {
       this.width = '100%';
-      this.height = (this.rulerType == RulerType.Single) ? this.defaultSize + 'px' : (this.defaultSize * 2) + 'px';
-    } else if (this.orientation === Orientation.Horizontal && this.rulerMode === RulerMode.Grow) {
-      this.width = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange + 'px';
-      this.height = (this.rulerType == RulerType.Single) ? this.defaultSize + 'px' : (this.defaultSize * 2) + 'px';
-    } else if (this.orientation === Orientation.Vertical && this.rulerMode === RulerMode.Responsive) {
+      this.height = (this.rulerService.rulerType == RulerType.Single) ? this.rulerService.defaultSize + 'px' : (this.rulerService.defaultSize * 2) + 'px';
+    } else if (this.rulerService.orientation === Orientation.Horizontal && this.rulerService.rulerMode === RulerMode.Grow) {
+      this.width = (this.rulerService.range.end * this.unit.pixelsPerNUnit) / this.unit.unitsPerRange + 'px';
+      this.height = (this.rulerService.rulerType == RulerType.Single) ? this.rulerService.defaultSize + 'px' : (this.rulerService.defaultSize * 2) + 'px';
+    } else if (this.rulerService.orientation === Orientation.Vertical && this.rulerService.rulerMode === RulerMode.Responsive) {
       this.height = '100%';
-      this.width = (this.rulerType == RulerType.Single) ? this.defaultSize + 'px' : (this.defaultSize * 2) + 'px';
+      this.width = (this.rulerService.rulerType == RulerType.Single) ? this.rulerService.defaultSize + 'px' : (this.rulerService.defaultSize * 2) + 'px';
     } else {
-        this.height = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange + 'px';
-        this.width = (this.rulerType == RulerType.Single) ? this.defaultSize + 'px' : (this.defaultSize * 2) + 'px';
+        this.height = (this.rulerService.range.end * this.unit.pixelsPerNUnit) / this.unit.unitsPerRange + 'px';
+        this.width = (this.rulerService.rulerType == RulerType.Single) ? this.rulerService.defaultSize + 'px' : (this.rulerService.defaultSize * 2) + 'px';
     }
 
     this.elementRef.nativeElement.style.width = this.width;
     this.elementRef.nativeElement.style.height = this.height;
-  }
-
-  initRange () {
-    let offsetWidth = this.elementRef.nativeElement.offsetWidth;
-    let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-
-    if (this.orientation === Orientation.Horizontal && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
-      this.hatchRange = range(this.range.start, offsetWidth, this.hatchMarkSpacing);
-      this.unitRange = range(this.range.start, offsetWidth, this.pixelsPerNUnit);
-    } else if (this.orientation === Orientation.Vertical && (this.rulerMode === RulerMode.Responsive || this.rulerMode === RulerMode.Fit)) {
-      this.hatchRange = range(this.range.start, offsetHeight, this.hatchMarkSpacing);
-      this.unitRange = range(this.range.start, offsetHeight, this.pixelsPerNUnit);
-      let endRange = ((this.range.end * this.pixelsPerNUnit) + this.pixelsPerNUnit) / this.unitsPerRange;
-      this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
-      this.unitRange = range(this.range.start, endRange , this.pixelsPerNUnit);
-    }
+    this.rulerService.offsetWidth = this.elementRef.nativeElement.offsetWidth;
+    this.rulerService.offsetHeight = this.elementRef.nativeElement.offsetHeight;
   }
 
   initPHelper () {
-    this.pHelperHeight = (this.rulerType == RulerType.Double) ? this.defaultSize * 2 : this.defaultSize;
-    this.pHelperWidth = (this.rulerType == RulerType.Double) ? this.defaultSize * 2 : this.defaultSize;
-
-    let fontSplit = this.fontSize / 4;
-    let sizeHalf = (this.defaultSize * 2) / 2;
-    if (this.orientation == Orientation.Horizontal) {
-      this.pHelperTitleYPos = (this.rulerType == RulerType.Double) ? sizeHalf + fontSplit : (this.defaultSize / 2) + fontSplit
+    if (this.rulerService.rulerType === RulerType.Double) {
+      this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Vertical) ?  0 : 0;
+      this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Vertical) ?  this.rulerService.defaultSize * 2 : 0;
+      this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Horizontal) ? 0 : 0;
+      this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Horizontal) ? this.rulerService.defaultSize * 2 : 0;
     } else {
-      this.pHelperTitleXPos = (this.rulerType == RulerType.Double) ? sizeHalf - this.fontSize : 1;
+      this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Vertical) ?  0 : 0;
+      this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Vertical) ?  this.rulerService.defaultSize : 0;
+      this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Horizontal) ? 0 : 0;
+      this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Horizontal) ? this.rulerService.defaultSize : 0;
     }
-  }
-
-  isHorizontal () {
-    return (this.orientation === Orientation.Horizontal) ? true : false;
-  }
-
-  calcMultiTitleY (index, value) {
-    let offset = 0;
-    let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-    let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
-
-    if (this.orientation === Orientation.Vertical) {
-        if (this.rulerMode === RulerMode.Grow && unit == this.range.end || this.rulerMode === RulerMode.Responsive && value == offsetHeight) {
-            let negIndex = (index == 0) ? -1 : index - 1;
-            offset = negIndex * this.fontSize;
-        } else {
-            offset = ((index + 1) * this.fontSize);
-        }
-    }
-
-    return value + offset;
-  }
-
-  generateVerticalText (value) {
-    var newValue = this.unitsPerRange * value / this.pixelsPerNUnit;
-    var lines = newValue.toString().split('');
-    if (this.showUnits) {
-      lines.push(this.unit.symbol);
-    }
-    return lines;
   }
 
   onHostMouseMove (event) {
       if (!this.panning && event.target.tagName == 'svg') {
-          let position = (this.orientation === Orientation.Horizontal) ? event.offsetX : event.offsetY;
-          let unit =  (this.unitsPerRange) * (position - this.panDelta) / this.pixelsPerNUnit;
-          this.pHelperXPos = (this.orientation === Orientation.Horizontal) ? event.offsetX - this.panDelta: 0;
-          this.pHelperYPos = (this.orientation === Orientation.Vertical) ? event.offsetY - this.panDelta: 0;
-          this.pHelperTitle = Math.round(unit * 100) / 100;
+        this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : 0;
+        this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : this.pHelperLine.x2;
+        this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : 0;
+        this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : this.pHelperLine.y2;
+
+        let single = (this.rulerService.defaultSize - this.unit.fontSize) + (this.unit.fontSize / 4);
+        let double = (this.rulerService.defaultSize * 2) / 2 + (this.unit.fontSize / 4);
+        if (this.rulerService.orientation === Orientation.Horizontal) {
+          this.pHelperTitlePos.x1 = this.pHelperLine.x1 + 5;
+          this.pHelperTitlePos.y1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
+        } else {
+          this.pHelperTitlePos.x1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
+          this.pHelperTitlePos.y1 = this.pHelperLine.x1 + 5;
+        }
+
+        let position = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : event.offsetY;
+        let unit = (this.unit.unitsPerRange) * (position - this.panDelta) / this.unit.pixelsPerNUnit;
+        let value = Math.round(unit * 100) / 100;
+        this.pHelperTitle = value.toString();
+        if (this.unit.showUnitSymbols) {
+          this.pHelperTitle += ' ' + this.unit.symbol;
+        }
       }
   }
 
   onHostPan (event) {
       if (this.panning) {
-          let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-          let offsetWidth = this.elementRef.nativeElement.offsetWidth;
-          let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
-          let widthDiff = endRange - offsetWidth;
-          let heightDiff = endRange - offsetHeight;
-          let deltaX = this.range.start - (this.pPanDelta + event.deltaX);
-          let deltaY = this.range.start - (this.pPanDelta + event.deltaY);
+          let endRange = (this.rulerService.range.end * this.unit.pixelsPerNUnit) / this.unit.unitsPerRange;
+          let widthDiff = endRange - this.rulerService.offsetWidth;
+          let heightDiff = endRange - this.rulerService.offsetHeight;
+          let deltaX = this.rulerService.range.start - (this.pPanDelta + event.deltaX);
+          let deltaY = this.rulerService.range.start - (this.pPanDelta + event.deltaY);
 
-          if (this.orientation === Orientation.Horizontal) {
-              if (endRange > offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.range.start){
-                  this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
-                  this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
-                  this.panDelta = deltaX ;
-              } else if (-(deltaX) < this.range.start){
-                  this.panDelta = this.range.start;
-              } else if (-(deltaX) > offsetWidth) {
+          if (this.rulerService.orientation === Orientation.Horizontal) {
+              if (endRange > this.rulerService.offsetWidth && -(deltaX) < widthDiff && -(deltaX) > this.rulerService.range.start){
+                  this.panDelta = deltaX;
+              } else if (-(deltaX) < this.rulerService.range.start){
+                  this.panDelta = this.rulerService.range.start;
+              } else if (-(deltaX) > this.rulerService.offsetWidth) {
                   this.panDelta = -widthDiff;
               }
-          } else if (this.orientation === Orientation.Vertical) {
-              if (endRange > offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.range.start) {
-                  this.hatchRange = range(this.range.start, endRange, this.hatchMarkSpacing);
-                  this.unitRange = range(this.range.start, endRange, this.pixelsPerNUnit);
+          } else if (this.rulerService.orientation === Orientation.Vertical) {
+              if (endRange > this.rulerService.offsetHeight && -(deltaY) < heightDiff && -(deltaY) > this.rulerService.range.start) {
                   this.panDelta = deltaY;
-              }  else if (-(deltaY) < this.range.start){
-                  this.panDelta = this.range.start;
-              } else if (-(deltaY) > offsetHeight) {
+              }  else if (-(deltaY) < this.rulerService.range.start){
+                  this.panDelta = this.rulerService.range.start;
+              } else if (-(deltaY) > this.rulerService.offsetHeight) {
                   this.panDelta = -heightDiff;
               }
           }
@@ -268,8 +223,8 @@ export class Ng2RulerComponent implements OnInit {
       if (this.allowWheelPan) {
           this.panning = true;
           this.showPHelper = false;
-          let delta = (event.deltaY < 100) ? this.unitsPerRange : -this.unitsPerRange;
-          if (this.orientation === Orientation.Horizontal) {
+          let delta = (event.deltaY < 100) ? this.unit.unitsPerRange : -this.unit.unitsPerRange;
+          if (this.rulerService.orientation === Orientation.Horizontal) {
               this.onHostPan({deltaX: delta, deltaY: 1});
           } else {
               this.onHostPan({deltaX: 1, deltaY: delta});
@@ -282,7 +237,7 @@ export class Ng2RulerComponent implements OnInit {
 
   getPanTranslation () {
       let style = '';
-      if (this.orientation === Orientation.Horizontal) {
+      if (this.rulerService.orientation === Orientation.Horizontal) {
           style = 'transform: translateX(' + this.panDelta + 'px)';
       } else {
           style = 'transform: translateY(' + this.panDelta + 'px)';
@@ -292,118 +247,15 @@ export class Ng2RulerComponent implements OnInit {
       return sanitizedStyle;
   }
 
-  getMultiLineTitleTranslation (value, titleElm) {
-      let style = '';
-      if (this.orientation === Orientation.Vertical) {
-          let y = 0;
-          if (this.vTextAlignment === Alignment.Bottom || value == this.range.start) {
-              y = 5;
-          } else if (this.vTextAlignment === Alignment.Top) {
-              y = -titleElm.clientHeight - 5;
-          } else if (this.vTextAlignment === Alignment.Center) {
-              y = -(titleElm.clientHeight / 2);
-          }
-
-          let single = 0;
-          let double = 0;
-          if (this.hTextAlignment === Alignment.Left) {
-              single = titleElm.clientWidth;
-              double = single;
-          } else if (this.hTextAlignment === Alignment.Right) {
-              single = this.defaultSize - (titleElm.clientWidth * 2);
-              double = (this.defaultSize * 2) - (titleElm.clientWidth * 2);
-          } else if (this.hTextAlignment === Alignment.Center) {
-              single = (this.defaultSize / 2) - (titleElm.clientWidth / 2);
-              double = ((this.defaultSize * 2) / 2) - (titleElm.clientWidth / 2);
-          }
-          let x = (this.rulerType === RulerType.Single) ? single : double;
-          style = 'transform: translate('+ x + 'px,' + y + 'px)';
-      }
-
-      let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
-      return sanitizedStyle;
-  }
-
-  getTitleTranslation (value, titleElm) {
-      let style = '';
-      if (this.orientation == Orientation.Horizontal) {
-          let x = 0;
-          let offsetWidth = this.elementRef.nativeElement.offsetWidth;
-          let unit = (this.unitsPerRange) * value / this.pixelsPerNUnit;
-
-          if (this.rulerMode === RulerMode.Grow && unit == this.range.end || this.rulerMode === RulerMode.Responsive && value == offsetWidth) {
-              x = -titleElm.clientWidth - 5;
-          } else if (unit == this.range.start || this.hTextAlignment === Alignment.Right) {
-              x = 5;
-          } else if (this.hTextAlignment === Alignment.Left) {
-              x = -titleElm.clientWidth - 5;
-          } else if (this.hTextAlignment === Alignment.Center) {
-              x = -(titleElm.clientWidth / 2);
-          }
-
-          let single = 0;
-          let double = 0;
-          if (this.vTextAlignment === Alignment.Top) {
-              single = this.defaultSize - this.fontSize;
-              double = single;
-          } else if (this.vTextAlignment === Alignment.Center) {
-              single = (this.defaultSize - this.fontSize) + (this.fontSize / 4);
-              double = (this.defaultSize * 2) / 2 + (this.fontSize / 4);
-          } else if (this.vTextAlignment === Alignment.Bottom) {
-              single = this.defaultSize - (this.fontSize / 2);
-              double = (this.defaultSize * 2) - (this.fontSize / 2);
-          }
-
-          let y = (this.rulerType === RulerType.Single) ? single : double;
-          style = 'transform: translate(' + (value + x) + 'px,' + y + 'px)';
-      }
-      let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(style);
-      return sanitizedStyle;
-  }
-
   getThemeClassName () {
-      let offsetHeight = this.elementRef.nativeElement.offsetHeight;
-      let offsetWidth = this.elementRef.nativeElement.offsetWidth;
-      let endRange = (this.range.end * this.pixelsPerNUnit) / this.unitsPerRange;
+      let endRange = (this.rulerService.range.end * this.unit.pixelsPerNUnit) / this.unit.unitsPerRange;
       let grabbing = '';
 
-      if (this.orientation === Orientation.Horizontal && endRange > offsetWidth ||
-          this.orientation === Orientation.Vertical && endRange > offsetHeight) {
+      if (this.rulerService.orientation === Orientation.Horizontal && endRange > this.rulerService.offsetWidth ||
+          this.rulerService.orientation === Orientation.Vertical && endRange > this.rulerService.offsetHeight) {
           grabbing = 'grabbing'
       }
 
-      return Theme[this.theme].toLowerCase() + ' ' + grabbing;
-  }
-
-  initTickPositions () {
-      let ux1 = 0;
-      let ux2 = this.unitSize;
-      let uy1 = 0;
-      let uy2 = this.unitSize;
-      let hx1 = 0;
-      let hx2 = this.hatchSize;
-      let hy1 = 0;
-      let hy2 = this.hatchSize;
-      if (this.rulerType === RulerType.Single && this.tickPlacement === Alignment.Bottom) {
-          uy1 = this.defaultSize;
-          uy2 = this.defaultSize - this.unitSize;
-          hy1 = this.defaultSize;
-          hy2 = this.defaultSize - this.hatchSize;
-      }
-      if (this.rulerType === RulerType.Single && this.tickPlacement === Alignment.Right) {
-          ux1 = this.defaultSize;
-          ux2 = this.defaultSize - this.unitSize;
-          hx1 = this.defaultSize;
-          hx2 = this.defaultSize - this.hatchSize;
-      }
-      this.unitTickPositions = {x1: ux1, x2: ux2, y1: uy1, y2: uy2};
-      this.hatchTickPositions = {x1: hx1, x2: hx2, y1: hy1, y2: hy2};
-  }
-
-  formatTitle (value) {
-    let newValue = (this.unitsPerRange) * value / this.pixelsPerNUnit;
-    newValue += (this.showUnits) ? this.unit.symbol : '';
-    newValue = Math.round(newValue * 100) / 100;
-    return newValue;
+      return Theme[this.rulerService.theme].toLowerCase() + ' ' + grabbing;
   }
 }

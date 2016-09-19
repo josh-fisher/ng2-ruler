@@ -1,30 +1,7 @@
-doctype html
 svg:svg([attr.width]="width", [attr.height]="height", [ngClass]="getThemeClassName()")
-  svg:g.horizontal(*ngIf="isHorizontal()", [attr.style.transform]="getPanTranslation()")
-    svg:g.hatching(*ngIf="showHatching")
-        svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="hatchTickPositions.y1", [attr.x2]="line", [attr.y2]="hatchTickPositions.y2")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="unitTickPositions.y1", [attr.x2]="line", [attr.y2]="unitTickPositions.y2")
-    svg:text.title(#htitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getTitleTranslation(line, htitle)")
-      svg:tspan {{formatTitle(line)}}
-    svg:g.phelperGroup(*ngIf="showPHelper")
-      svg:line.phelper([attr.x1]="pHelperXPos", y1="0", [attr.x2]="pHelperXPos", [attr.y2]="pHelperHeight")
-      svg:text.title([attr.x]="pHelperXPos + 10", [attr.y]="pHelperTitleYPos", text-anchor="left")
-        svg:tspan {{pHelperTitle}} {{showUnits ? unit.symbol : ''}}
-  svg:g.vertical(*ngIf="!isHorizontal()", [attr.style.transform]="getPanTranslation()")
-    svg:g.hatching(*ngIf="showHatching")
-      svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="hatchTickPositions.x1", [attr.y1]="line", [attr.x2]="hatchTickPositions.x2", [attr.y2]="line")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="unitTickPositions.x1", [attr.y1]="line", [attr.x2]="unitTickPositions.x2", [attr.y2]="line")
-    svg:text.title(#vtitle, *ngFor="let line of unitRange", text-anchor="left", [attr.style]="getMultiLineTitleTranslation(line, vtitle)")
-      svg:tspan(*ngFor="let splitLine of generateVerticalText(line); let i = index", x="0", [attr.y]="calcMultiTitleY(i, line)") {{splitLine}}
-    svg:g.phelperGroup(*ngIf="showPHelper")
-      svg:line.phelper([attr.x1]="0", [attr.y1]="pHelperYPos", [attr.x2]="pHelperWidth", [attr.y2]="pHelperYPos")
-      svg:text.title([attr.x]="pHelperTitleXPos", [attr.y]="pHelperYPos - 10", text-anchor="left")
-        svg:tspan {{pHelperTitle}}
-  svg:g.horizontal(*ngIf="isHorizontal() && rulerType == 1", [attr.style.transform]="getPanTranslation()")
-    svg:g.hatching(*ngIf="showHatching")
-      svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="line", [attr.y1]="defaultSize * 2", [attr.x2]="line", [attr.y2]="defaultSize * 2 - hatchSize")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="line", [attr.y1]="defaultSize * 2", [attr.x2]="line", [attr.y2]="defaultSize * 2 - unitSize")
-  svg:g.vertical(*ngIf="!isHorizontal() && rulerType == 1", [attr.style.transform]="getPanTranslation()")
-    svg:g.hatching(*ngIf="showHatching")
-      svg:line.hatch(*ngFor="let line of hatchRange", [attr.x1]="defaultSize * 2", [attr.y1]="line", [attr.x2]="defaultSize * 2 - hatchSize", [attr.y2]="line")
-    svg:line.unit(*ngFor="let line of unitRange", [attr.x1]="defaultSize * 2", [attr.y1]="line", [attr.x2]="defaultSize * 2 - unitSize", [attr.y2]="line")
+  svg:g.units(ng2-ruler-units, [unit]="unit", [attr.style.transform]="getPanTranslation()")
+  svg:g.units(ng2-ruler-units, *ngFor="let iunit of unit.hatchUnits", [unit]="iunit", [parentUnit]="unit", [attr.style.transform]="getPanTranslation()")
+  svg:g.phelperGroup
+    svg:line.phelper([attr.x1]="pHelperLine.x1", [attr.y1]="pHelperLine.y1", [attr.x2]="pHelperLine.x2", [attr.y2]="pHelperLine.y2")
+    svg:text.title([attr.x]="pHelperTitlePos.x1", [attr.y]="pHelperTitlePos.y1", text-anchor="left")
+      svg:tspan {{pHelperTitle}}

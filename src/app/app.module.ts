@@ -4,10 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { Ng2RulerComponent } from './components/app.component';
-import { Units } from './services/units.service';
+import {RulerService} from './services/ruler.service';
+import {UnitsService} from './services/units.service';
+import {UnitsComponent} from './components/units/units.component';
 
 @NgModule({
   declarations: [
+    UnitsComponent,
     Ng2RulerComponent
   ],
   imports: [
@@ -15,7 +18,7 @@ import { Units } from './services/units.service';
     FormsModule,
     HttpModule
   ],
-  providers: [Units],
+  providers: [RulerService, UnitsService],
   bootstrap: [Ng2RulerComponent]
 })
 export class Ng2RulerModule { }

@@ -7,6 +7,7 @@
   z-index: 1;
   font-family: 'Source Sans Pro';
   font-weight: normal;
+  font-size: 11px;
 }
 
 .ibackground {
@@ -19,93 +20,44 @@
 
 svg {
   position: relative;
+  .noselect;
 
-  g {
-	.noselect;
+  .phelperGroup {
+    z-index: 2;
 
-	.hatch {
-	  stroke-width: 1px;
-	}
-
-	.unit {
-	  stroke-width: 2px;
-	}
-
-	.title {
-	  font-size: 11px;
-	}
-
-	.phelperGroup {
-	  z-index: 2;
-
-	  .phelper {
-		stroke-width: 2px;
-	  }
-
-	  .title {
-		font-weight: bold;
-	  }
-	}
+    .phelper {
+      stroke-width: 2px;
+    }
   }
 }
 
 .dark {
-  @background: #535353;
-  @text: #c4c4c4;
-  @highlight: #00B95D;
-
+  .darkcolors;
   background-color: @background;
 
-  .hatch {
-	stroke: @text;
-  }
-
-  .unit {
-	stroke: @text;
-  }
-
-  .title {
-	fill: @text;
-  }
-
   .phelperGroup {
-	.phelper {
-	  stroke: @highlight;
-	}
+    .phelper {
+      stroke: @highlight;
+    }
 
-	.title {
-	  fill: @highlight;
-	}
+    .title {
+      fill: @highlight;
+    }
   }
 }
 
 .light {
-  @background: #c4c4c4;
-  @text: #535353;
-  @highlight: #b9005c;
-
+  .lightcolors;
   background-color: @background;
 
-  .hatch {
-	stroke: @text;
-  }
-
-  .unit {
-	stroke: @text;
-  }
-
-  .title {
-	fill: @text;
-  }
-
   .phelperGroup {
-	.phelper {
-	  stroke: @highlight;
-	}
+    .phelper {
+      stroke: @highlight;
+    }
 
-	.title {
-	  fill: @highlight;
-	}
+    .title {
+      fill: @highlight;
+    }
   }
 }
 

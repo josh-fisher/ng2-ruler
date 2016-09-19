@@ -1,0 +1,69 @@
+@import '../../shared/globals';
+
+:host {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.hatch {
+  stroke-width: 2px;
+}
+
+.dark {
+  .darkcolors;
+
+  .units {
+    .unit {
+      fill: @text;
+    }
+  }
+
+  .hatch {
+    stroke: @text;
+  }
+}
+
+.light {
+  .lightcolors;
+
+  .units {
+    .unit {
+      fill: @text;
+    }
+  }
+
+  .hatch {
+    stroke: @text;
+  }
+}
+
+.metal {
+  .dark;
+}
+
+.wood_whitewashed {
+  .light;
+}
+
+.wood_natural {
+  .light;
+}
+
+.wood_honey {
+  .light;
+}
+
+.wood_oak {
+  .dark;
+}
+
+.wood_cherry {
+  .dark;
+}
+
+.wood_ebony {
+  .dark;
+}
