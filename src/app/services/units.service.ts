@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {RulerService} from './ruler.service';
+import {RulerService, IRulerSettings} from './ruler.service';
 import {RulerMode} from '../shared/enums/rulermode.enum';
 import {Orientation} from '../shared/enums/orientation.enum';
 import {UnitType} from '../shared/enums/unit.enum';
@@ -15,21 +15,21 @@ export class Unit {
   fontSize: number = 11;
   hatchStyle: string = '';
 
-  constructor (rulerService: RulerService, params: any) {
+  constructor (rulerSettings: IRulerSettings, params: any) {
     this.pixelsPerNUnit = params.pixelsPerNUnit;
     this.unitsPerRange = params.unitsPerRange;
     this.symbol = params.symbol;
     this.hatchUnits = (params.hatchUnits) ? params.hatchUnits : [];
     this.showUnits = (params.showUnits != undefined) ? params.showUnits : true;
     this.showUnitSymbols = (params.showUnitSymbols != undefined) ? params.showUnitSymbols : true;
-    this.hatchSize = (params.hatchSize != undefined) ? params.hatchSize : rulerService.defaultSize / 3;
-    this.fontSize = (params.fontSize != undefined) ? params.fontSize : rulerService.defaultFontSize;
+    this.hatchSize = (params.hatchSize != undefined) ? params.hatchSize : rulerSettings.defaultSize / 3;
+    this.fontSize = (params.fontSize != undefined) ? params.fontSize : rulerSettings.defaultFontSize;
     this.hatchStyle = (params.hatchStyle != undefined) ? params.hatchStyle : undefined;
 
-    if (rulerService.rulerMode === RulerMode.Fit && rulerService.orientation === Orientation.Horizontal) {
-      this.pixelsPerNUnit = (rulerService.offsetWidth / rulerService.range.end) * this.unitsPerRange;
-    } else if (rulerService.rulerMode === RulerMode.Fit && rulerService.orientation === Orientation.Vertical) {
-      this.pixelsPerNUnit = (rulerService.offsetHeight / rulerService.range.end) * this.unitsPerRange;
+    if (rulerSettings.rulerMode === RulerMode.Fit && rulerSettings.orientation === Orientation.Horizontal) {
+      this.pixelsPerNUnit = (rulerSettings.offsetWidth / rulerSettings.range.end) * this.unitsPerRange;
+    } else if (rulerSettings.rulerMode === RulerMode.Fit && rulerSettings.orientation === Orientation.Vertical) {
+      this.pixelsPerNUnit = (rulerSettings.offsetHeight / rulerSettings.range.end) * this.unitsPerRange;
     }
   }
 }
