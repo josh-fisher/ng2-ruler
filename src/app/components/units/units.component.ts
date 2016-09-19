@@ -27,6 +27,11 @@ export class UnitsComponent implements OnInit {
 
   ngOnInit() {
     this.initRange();
+
+    let self = this;
+    window.addEventListener('resize', () => {
+      self.initRange();
+    });
   }
 
   initRange () {

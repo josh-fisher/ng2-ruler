@@ -6,5 +6,4 @@ feat(rulermode): add Dynamic ruler mode that accepts a range but grows (allows f
 doc(readme): update readme to include project specific information.
 doc(wiki): create tool documentation.
 
-
 Add testing for everything.
