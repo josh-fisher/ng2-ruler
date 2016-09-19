@@ -30,11 +30,12 @@ import {Line} from "../shared/line";
   },
   inputs: ['unitType', 'unit', 'orientation', 'rulerMode', 'rulerType',
     'hTextAlignment', 'vTextAlignment', 'hatchPlacement', 'defaultSize',
-    'defaultFontSize', 'range', 'theme']
+    'defaultFontSize', 'range', 'theme', 'allowPHelper']
 })
 export class Ng2RulerComponent implements OnInit {
   unitType:                   UnitType        = UnitType.Pixels;
   rulerService:               RulerService;
+  allowPHelper:               boolean        = true;
 
   private unit:               Unit;
   private hatchUnits:         Array<Unit>     = [];
@@ -43,7 +44,7 @@ export class Ng2RulerComponent implements OnInit {
   private pHelperTitle:       string          = '';
   private pHelperTitlePos:    any             = {x1:0, y1:0};
   private pHelperLine:        Line            = new Line(0,0,0,0);
-  private showPHelper:        boolean         = true;
+  private showPHelper:        boolean         = false;
   private panning:            boolean         = false;
   private panDelta:           number          = 0;
   private pPanDelta:          number          = 0;
@@ -218,7 +219,7 @@ export class Ng2RulerComponent implements OnInit {
 
   onHostPanEnd (event) {
       this.panning = false;
-      this.showPHelper = true;
+      this.showPHelper = (this.allowPHelper) ? true : false;
       this.pPanDelta = -(this.panDelta);
   }
 
@@ -233,7 +234,7 @@ export class Ng2RulerComponent implements OnInit {
               this.onHostPan({deltaX: 1, deltaY: delta});
           }
           this.panning = false;
-          this.showPHelper = true;
+          this.showPHelper = (this.allowPHelper) ? true : false;
           this.pPanDelta = -(this.panDelta);
       }
   }
