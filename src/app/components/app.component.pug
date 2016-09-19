@@ -1,6 +1,6 @@
 svg:svg([attr.width]="width", [attr.height]="height", [ngClass]="getThemeClassName()")
   svg:g.units(ng2-ruler-units, [unit]="unit", [attr.style.transform]="getPanTranslation()")
-  svg:g.units(ng2-ruler-units, *ngFor="let iunit of unit.hatchUnits", [unit]="iunit", [parentUnit]="unit", [attr.style.transform]="getPanTranslation()")
+  svg:g.subunits(ng2-ruler-units, *ngFor="let iunit of unit.hatchUnits", [unit]="iunit", [parentUnit]="unit", [attr.style.transform]="getPanTranslation()")
   svg:g.phelperGroup
     svg:line.phelper([attr.x1]="pHelperLine.x1", [attr.y1]="pHelperLine.y1", [attr.x2]="pHelperLine.x2", [attr.y2]="pHelperLine.y2")
     svg:text.title([attr.x]="pHelperTitlePos.x1", [attr.y]="pHelperTitlePos.y1", text-anchor="left")

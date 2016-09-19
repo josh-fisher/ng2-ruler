@@ -20,6 +20,6 @@ export class RulerService {
   defaultSize:        number          = 24;
   offsetWidth:        number          = 0;
   offsetHeight:       number          = 0;
-  range:              Range           = new Range(0,30);
+  range:              Range           = new Range(0,0);
   defaultFontSize:    number          = 11;
 }

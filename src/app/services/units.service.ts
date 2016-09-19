@@ -35,17 +35,6 @@ export class Unit {
 }
 
 @Injectable()
-export class Seconds extends Unit {
-  constructor (rulerService: RulerService) {
-    super(rulerService, {
-      pixelsPerNUnit: 200,
-      unitsPerRange: 20,
-      symbol: 's'
-    });
-  }
-}
-
-@Injectable()
 export class Milliseconds extends Unit {
   constructor (rulerService: RulerService) {
     super(rulerService, {
@@ -57,12 +46,19 @@ export class Milliseconds extends Unit {
 }
 
 @Injectable()
-export class Centimeters extends Unit {
+export class Seconds extends Unit {
   constructor (rulerService: RulerService) {
+    let ms = new Milliseconds(rulerService);
+    ms.showUnits = false;
+    ms.showUnitSymbols = false;
+    ms.hatchSize = rulerService.defaultSize / 4;
+    ms.pixelsPerNUnit = 10;
+
     super(rulerService, {
-      pixelsPerNUnit: 37.795276,
-      unitsPerRange: 1,
-      symbol: 'cm'
+      pixelsPerNUnit: 200,
+      unitsPerRange: 20,
+      symbol: 's',
+      hatchUnits: [ms]
     });
   }
 }
@@ -74,6 +70,23 @@ export class Millimeters extends Unit {
       pixelsPerNUnit:  3.779528,
       unitsPerRange: 1,
       symbol: 'mm'
+    });
+  }
+}
+
+@Injectable()
+export class Centimeters extends Unit {
+  constructor (rulerService: RulerService) {
+    let mm = new Millimeters(rulerService);
+    mm.showUnits = false;
+    mm.showUnitSymbols = false;
+    mm.hatchSize = rulerService.defaultSize / 4;
+
+    super(rulerService, {
+      pixelsPerNUnit: 37.795276,
+      unitsPerRange: 1,
+      symbol: 'cm',
+      hatchUnits: [mm]
     });
   }
 }
@@ -125,10 +138,19 @@ export class Inches extends Unit {
 @Injectable()
 export class Feet extends Unit {
   constructor (rulerService: RulerService) {
+    let inches = new Inches(rulerService);
+    inches.showUnits = false;
+    inches.showUnitSymbols = false;
+    inches.hatchSize = rulerService.defaultSize / 4;
+
+    let hatchUnits = inches.hatchUnits;
+    hatchUnits.push(inches);
+
     super(rulerService, {
       pixelsPerNUnit: 1152,
       unitsPerRange: 1,
-      symbol: 'ft'
+      symbol: 'ft',
+      hatchUnits: hatchUnits
     });
   }
 }
@@ -145,23 +167,43 @@ export class Pixels extends Unit {
 }
 
 @Injectable()
-export class Picas extends Unit {
+export class Points extends Unit {
   constructor (rulerService: RulerService) {
+    let px = new Pixels(rulerService);
+    px.showUnits = false;
+    px.showUnitSymbols = false;
+    px.hatchSize = rulerService.defaultSize / 4;
+    px.pixelsPerNUnit = 13.3;
+
     super(rulerService, {
-      pixelsPerNUnit: 160,
-      unitsPerRange: 10,
-      symbol: 'pc'
+      pixelsPerNUnit: 133,
+      unitsPerRange: 100,
+      symbol: 'pt',
+      hatchUnits: [px]
     });
   }
 }
 
 @Injectable()
-export class Points extends Unit {
+export class Picas extends Unit {
   constructor (rulerService: RulerService) {
+    let pt = new Points(rulerService);
+    pt.showUnits = false;
+    pt.showUnitSymbols = false;
+    pt.hatchSize = rulerService.defaultSize / 4;
+    pt.pixelsPerNUnit = 16;
+
+    pt.hatchUnits[0].pixelsPerNUnit = 1.6;
+    pt.hatchUnits[0].hatchSize = rulerService.defaultSize / 6;
+
+    let hatchUnits = pt.hatchUnits;
+    hatchUnits.push(pt);
+
     super(rulerService, {
-      pixelsPerNUnit: 133,
-      unitsPerRange: 100,
-      symbol: 'pt'
+      pixelsPerNUnit: 160,
+      unitsPerRange: 10,
+      symbol: 'pc',
+      hatchUnits: hatchUnits
     });
   }
 }
@@ -183,7 +225,6 @@ export class UnitsService {
       'points':       new Points(rulerService)
     };
   }
-
 
   getUnit(type: UnitType) {
     var unit = undefined;
