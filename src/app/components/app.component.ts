@@ -33,7 +33,7 @@ import {Line} from "../shared/line";
     'defaultFontSize', 'range', 'theme']
 })
 export class Ng2RulerComponent implements OnInit {
-  unitType:                   UnitType        = UnitType.Picas;
+  unitType:                   UnitType        = UnitType.Pixels;
   rulerService:               RulerService;
 
   private unit:               Unit;
@@ -154,9 +154,9 @@ export class Ng2RulerComponent implements OnInit {
   onHostMouseMove (event) {
       if (!this.panning && event.target.tagName == 'svg') {
         this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : 0;
-        this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : this.pHelperLine.x2;
+        this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : this.pHelperLine.y2;
         this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : 0;
-        this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : this.pHelperLine.y2;
+        this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : this.pHelperLine.x2;
 
         let single = (this.rulerService.defaultSize - this.unit.fontSize) + (this.unit.fontSize / 4);
         let double = (this.rulerService.defaultSize * 2) / 2 + (this.unit.fontSize / 4);
