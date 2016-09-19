@@ -152,30 +152,33 @@ export class Ng2RulerComponent implements OnInit {
   }
 
   onHostMouseMove (event) {
-      if (!this.panning && event.target.tagName == 'svg') {
-        this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : 0;
-        this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Vertical) ?  event.offsetY : this.pHelperLine.y2;
-        this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : 0;
-        this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : this.pHelperLine.x2;
+    let offsetX = (event.target.tagName == 'tspan') ? event.clientX : event.offsetX;
+    let offsetY = (event.target.tagName == 'tspan') ? event.clientY : event.offsetY;
 
-        let single = (this.rulerService.defaultSize - this.unit.fontSize) + (this.unit.fontSize / 4);
-        let double = (this.rulerService.defaultSize * 2) / 2 + (this.unit.fontSize / 4);
-        if (this.rulerService.orientation === Orientation.Horizontal) {
-          this.pHelperTitlePos.x1 = this.pHelperLine.x1 + 5;
-          this.pHelperTitlePos.y1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
-        } else {
-          this.pHelperTitlePos.x1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
-          this.pHelperTitlePos.y1 = this.pHelperLine.x1 + 5;
-        }
+    if (!this.panning) {
+      this.pHelperLine.x1 = (this.rulerService.orientation === Orientation.Horizontal) ? offsetX : 0;
+      this.pHelperLine.x2 = (this.rulerService.orientation === Orientation.Horizontal) ? offsetX : this.pHelperLine.x2;
+      this.pHelperLine.y1 = (this.rulerService.orientation === Orientation.Vertical) ?  offsetY : 0;
+      this.pHelperLine.y2 = (this.rulerService.orientation === Orientation.Vertical) ?  offsetY : this.pHelperLine.y2;
 
-        let position = (this.rulerService.orientation === Orientation.Horizontal) ? event.offsetX : event.offsetY;
-        let unit = (this.unit.unitsPerRange) * (position - this.panDelta) / this.unit.pixelsPerNUnit;
-        let value = Math.round(unit * 100) / 100;
-        this.pHelperTitle = value.toString();
-        if (this.unit.showUnitSymbols) {
-          this.pHelperTitle += ' ' + this.unit.symbol;
-        }
+      let single = (this.rulerService.defaultSize - this.unit.fontSize) + (this.unit.fontSize / 4);
+      let double = (this.rulerService.defaultSize * 2) / 2 + (this.unit.fontSize / 4);
+      if (this.rulerService.orientation === Orientation.Horizontal) {
+        this.pHelperTitlePos.x1 = this.pHelperLine.x1 + 5;
+        this.pHelperTitlePos.y1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
+      } else {
+        this.pHelperTitlePos.x1 = (this.rulerService.rulerType === RulerType.Single) ? single : double;
+        this.pHelperTitlePos.y1 = this.pHelperLine.x1 + 5;
       }
+
+      let position = (this.rulerService.orientation === Orientation.Horizontal) ? offsetX : offsetY;
+      let unit = (this.unit.unitsPerRange) * (position - this.panDelta) / this.unit.pixelsPerNUnit;
+      let value = Math.round(unit * 100) / 100;
+      this.pHelperTitle = value.toString();
+      if (this.unit.showUnitSymbols) {
+        this.pHelperTitle += ' ' + this.unit.symbol;
+      }
+    }
   }
 
   onHostPan (event) {
