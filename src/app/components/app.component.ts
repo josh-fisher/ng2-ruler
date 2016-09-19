@@ -8,10 +8,9 @@ import { RulerType }                                      from '../shared/enums/
 import {RulerMode}                                        from '../shared/enums/rulermode.enum';
 import {Theme}                                            from '../shared/enums/theme.enum';
 import {Alignment}                                        from '../shared/enums/alignment.enum';
-import {RulerService}     from '../services/ruler.service';
+import {RulerService, IRulerSettings}     from '../services/ruler.service';
 import {UnitType} from '../shared/enums/unit.enum';
 import {Unit, UnitsService} from '../services/units.service';
-import {range} from "../shared/range";
 import {Line} from "../shared/line";
 
 @Component({
@@ -28,14 +27,14 @@ import {Line} from "../shared/line";
     '(panend)':     'onHostPanEnd($event)',
     '(mousewheel)': 'onHostMouseWheel($event)'
   },
-  inputs: ['unitType', 'unit', 'orientation', 'rulerMode', 'rulerType',
-    'hTextAlignment', 'vTextAlignment', 'hatchPlacement', 'defaultSize',
-    'defaultFontSize', 'range', 'theme', 'allowPHelper']
+  inputs: ['unitType', 'allowPHelper', 'customUnit', 'customSettings']
 })
 export class Ng2RulerComponent implements OnInit {
-  unitType:                   UnitType        = UnitType.Pixels;
-  rulerService:               RulerService;
+  unitType:                   UnitType       = UnitType.Pixels;
   allowPHelper:               boolean        = true;
+  customUnit:                 Unit;
+  customSettings:             IRulerSettings;
+  rulerService:               RulerService;
 
   private unit:               Unit;
   private hatchUnits:         Array<Unit>     = [];
@@ -58,34 +57,32 @@ export class Ng2RulerComponent implements OnInit {
   }
 
   ngOnInit () {
+    this.init();
+
+    let self = this;
+    window.addEventListener('resize', () => {
+      self.init();
+    });
+  }
+
+  ngOnChanges (changes) {
+    this.init();
+  }
+
+  init() {
+    this.initInput();
     this.initUnits();
     this.initSize();
     this.initDefaults();
     this.initPHelper();
-
-    let self = this;
-    window.addEventListener('resize', () => {
-      self.initSize();
-    });
   }
 
-  /*
   initInput () {
-    this.rulerService.orientation = (this.orientation) ? this.orientation : Orientation.Horizontal;
-    this.rulerService.rulerMode = (this.rulerMode) ? this.rulerMode : RulerMode.Responsive;
-    this.rulerService.rulerType = (this.rulerType) ? this.rulerType : RulerType.Double;
-    this.rulerService.hTextAlignment = (this.hTextAlignment) ? this.hTextAlignment : Alignment.Center;
-    this.rulerService.vTextAlignment = (this.vTextAlignment) ? this.vTextAlignment : Alignment.Center;
-    this.rulerService.hatchPlacement = (this.hatchPlacement) ? this.hatchPlacement : Alignment.Bottom;
-    this.rulerService.defaultSize = (this.defaultSize) ? this.defaultSize : 24;
-    this.rulerService.fontSize = (this.fontSize) ? this.fontSize : 11;
-    this.rulerService.hatchSize = (this.hatchSize) ? this.hatchSize : this.defaultSize / 3;
-    this.rulerService.range = (this.range && this.range.length == 2) ? new Range(this.range[0], this.range[1]) : new Range(0, 12);
+    this.rulerService = (this.customSettings) ? this.customSettings : this.rulerService;
   }
-  */
 
   initUnits () {
-    this.unit = this.unitsService.getUnit(this.unitType);
+    this.unit = (this.customUnit) ? this.customUnit : this.unitsService.getUnit(this.unitType);
     this.hatchUnits = (this.hatchUnits) ? this.hatchUnits : this.unit.hatchUnits;
   }
 

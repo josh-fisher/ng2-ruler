@@ -5,11 +5,24 @@ import {Alignment} from '../shared/enums/alignment.enum';
 import {RulerType} from '../shared/enums/rulertype.enum';
 import {Range} from '../shared/range';
 import {Theme} from '../shared/enums/theme.enum';
-import {Observable, Observer} from "rxjs";
 
+export interface IRulerSettings {
+  theme:              Theme;
+  orientation:        Orientation;
+  rulerMode:          RulerMode;
+  rulerType:          RulerType;
+  hTextAlignment:     Alignment;
+  vTextAlignment:     Alignment;
+  hatchPlacement:     Alignment;
+  defaultSize:        number;
+  offsetWidth:        number;
+  offsetHeight:       number;
+  range:              Range;
+  defaultFontSize:    number;
+}
 
 @Injectable()
-export class RulerService {
+export class RulerService implements IRulerSettings {
   theme:              Theme           = Theme.Wood_WhiteWashed;
   orientation:        Orientation     = Orientation.Horizontal;
   rulerMode:          RulerMode       = RulerMode.Responsive;
