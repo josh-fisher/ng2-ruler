@@ -13,7 +13,7 @@ export class Unit {
   hatchUnits: Array<Unit> = [];
   hatchSize: number = 0;
   fontSize: number = 11;
-  hatchColor: string;
+  hatchStyle: string = '';
 
   constructor (rulerService: RulerService, params: any) {
     this.pixelsPerNUnit = params.pixelsPerNUnit;
@@ -24,7 +24,7 @@ export class Unit {
     this.showUnitSymbols = (params.showUnitSymbols != undefined) ? params.showUnitSymbols : true;
     this.hatchSize = (params.hatchSize != undefined) ? params.hatchSize : rulerService.defaultSize / 3;
     this.fontSize = (params.fontSize != undefined) ? params.fontSize : rulerService.defaultFontSize;
-    this.hatchColor = (params.hatchColor != undefined) ? params.hatchColor : undefined;
+    this.hatchStyle = (params.hatchStyle != undefined) ? params.hatchStyle : undefined;
 
     if (rulerService.rulerMode === RulerMode.Fit && rulerService.orientation === Orientation.Horizontal) {
       this.pixelsPerNUnit = (rulerService.offsetWidth / rulerService.range.end) * this.unitsPerRange;
@@ -51,8 +51,9 @@ export class Seconds extends Unit {
     let ms = new Milliseconds(rulerService);
     ms.showUnits = false;
     ms.showUnitSymbols = false;
-    ms.hatchSize = rulerService.defaultSize / 4;
+    ms.hatchSize = rulerService.defaultSize / 5;
     ms.pixelsPerNUnit = 10;
+    ms.hatchStyle = 'stroke-width: 1px;';
 
     super(rulerService, {
       pixelsPerNUnit: 200,
@@ -80,7 +81,8 @@ export class Centimeters extends Unit {
     let mm = new Millimeters(rulerService);
     mm.showUnits = false;
     mm.showUnitSymbols = false;
-    mm.hatchSize = rulerService.defaultSize / 4;
+    mm.hatchSize = rulerService.defaultSize / 5;
+    mm.hatchStyle = 'stroke-width: 1px;';
 
     super(rulerService, {
       pixelsPerNUnit: 37.795276,
@@ -101,6 +103,7 @@ export class Inches extends Unit {
       showUnits: false,
       showUnitSymbols: false,
       hatchSize: rulerService.defaultSize / 4,
+      hatchStyle: 'stroke-width: 1px;'
     });
     let quarterInchUnit = new Unit(rulerService, {
       pixelsPerNUnit: 24,
@@ -109,6 +112,7 @@ export class Inches extends Unit {
       showUnits: false,
       showUnitSymbols: false,
       hatchSize: rulerService.defaultSize / 5,
+      hatchStyle: 'stroke-width: 1px;'
     });
     let eigthInchUnit = new Unit(rulerService, {
       pixelsPerNUnit: 12,
@@ -117,6 +121,7 @@ export class Inches extends Unit {
       showUnits: false,
       showUnitSymbols: false,
       hatchSize: rulerService.defaultSize / 6,
+      hatchStyle: 'stroke-width: 1px;'
     });
     let sixteenthInchUnit = new Unit(rulerService, {
       pixelsPerNUnit: 6,
@@ -125,6 +130,7 @@ export class Inches extends Unit {
       showUnits: false,
       showUnitSymbols: false,
       hatchSize: rulerService.defaultSize / 7,
+      hatchStyle: 'stroke-width: 1px;'
     });
     super(rulerService, {
       pixelsPerNUnit: 96,
@@ -142,6 +148,7 @@ export class Feet extends Unit {
     inches.showUnits = false;
     inches.showUnitSymbols = false;
     inches.hatchSize = rulerService.defaultSize / 4;
+    inches.hatchStyle = 'stroke-width: 1px;';
 
     let hatchUnits = inches.hatchUnits;
     hatchUnits.push(inches);
@@ -158,10 +165,20 @@ export class Feet extends Unit {
 @Injectable()
 export class Pixels extends Unit {
   constructor (rulerService: RulerService) {
+    let ticks = new Unit(rulerService, {
+      showUnits: false,
+      showUnitSymbols: false,
+      hatchSize: rulerService.defaultSize / 5,
+      pixelsPerNUnit: 10,
+      unitsPerRange: 100,
+      hatchStyle: 'stroke-width: 1px;'
+    });
+
     super(rulerService, {
       pixelsPerNUnit: 100,
       unitsPerRange: 100,
-      symbol: 'px'
+      symbol: 'px',
+      hatchUnits: [ticks]
     });
   }
 }
@@ -172,8 +189,9 @@ export class Points extends Unit {
     let px = new Pixels(rulerService);
     px.showUnits = false;
     px.showUnitSymbols = false;
-    px.hatchSize = rulerService.defaultSize / 4;
+    px.hatchSize = rulerService.defaultSize / 5;
     px.pixelsPerNUnit = 13.3;
+    px.hatchStyle = 'stroke-width: 1px;';
 
     super(rulerService, {
       pixelsPerNUnit: 133,
@@ -190,11 +208,13 @@ export class Picas extends Unit {
     let pt = new Points(rulerService);
     pt.showUnits = false;
     pt.showUnitSymbols = false;
-    pt.hatchSize = rulerService.defaultSize / 4;
+    pt.hatchSize = rulerService.defaultSize / 5;
     pt.pixelsPerNUnit = 16;
+    pt.hatchStyle = 'stroke-width: 1px;';
 
     pt.hatchUnits[0].pixelsPerNUnit = 1.6;
-    pt.hatchUnits[0].hatchSize = rulerService.defaultSize / 6;
+    pt.hatchUnits[0].hatchSize = rulerService.defaultSize / 7;
+    pt.hatchUnits[0].hatchStyle = 'stroke-width: 0.5px;';
 
     let hatchUnits = pt.hatchUnits;
     hatchUnits.push(pt);

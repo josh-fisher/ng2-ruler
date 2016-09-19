@@ -33,7 +33,7 @@ import {Line} from "../shared/line";
     'defaultFontSize', 'range', 'theme']
 })
 export class Ng2RulerComponent implements OnInit {
-  unitType:                   UnitType        = UnitType.Inches;
+  unitType:                   UnitType        = UnitType.Picas;
   rulerService:               RulerService;
 
   private unit:               Unit;

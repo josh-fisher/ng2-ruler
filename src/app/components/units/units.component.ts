@@ -199,4 +199,9 @@ export class UnitsComponent implements OnInit {
   getThemeClassName () {
     return Theme[this.rulerService.theme].toLowerCase();
   }
+
+  getHatchStyle (hatchStyle) {
+    let sanitizedStyle = this.sanitizer.bypassSecurityTrustStyle(hatchStyle);
+    return sanitizedStyle;
+  }
 }
