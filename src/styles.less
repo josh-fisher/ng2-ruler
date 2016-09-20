@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+@background: #535353;
+@text: #c4c4c4;
+@highlight: #00B95D;
+
+@font-face {
+  font-family: 'Source Sans Pro';
+  src: inline("./src/assets/fonts/sourcesanspro-regular.eot"); /* IE9 */
+  src: local('./src/assets/fonts/Source Sans Pro'),
+  inline('./src/assets/fonts/sourcesanspro-regular.woff') format('woff'),
+  inline('./src/assets/fonts/sourcesanspro-regular.ttf') format('truetype')
+}
+
+.noselect {
+  user-select: none;          /* Likely future */
+}
+
+.darkcolors {
+  @background: #535353;
+  @text: #c4c4c4;
+  @highlight: #00B95D;
+}
+
+.lightcolors {
+  @background: #c4c4c4;
+  @text: #535353;
+  @highlight: #b9005c;
+}

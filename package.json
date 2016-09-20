@@ -2,6 +2,24 @@
   "name": "ng2-ruler",
   "version": "0.0.0",
   "license": "MIT",
+  "description": "Comprehensive on screen graphical ruler for Angular 2.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpf200124/ng2-ruler.git"
+  },
+  "keywords": [
+    "ruler",
+    "ng2-ruler",
+    "Angular2 Ruler",
+    "On Sreen Ruler",
+    "Graphical Ruler"
+  ],
+  "author": {
+    "name": "Josh Fisher",
+    "email": "jpf200124@gmail.com",
+    "url": "https://github.com/jpf200124"
+  },
+  "readmeFilename": "README.md",
   "angular-cli": {},
   "scripts": {
     "start": "ng lint && ng serve",
@@ -10,7 +28,6 @@
     "pree2e": "webdriver-manager update",
     "e2e": "protractor"
   },
-  "private": true,
   "dependencies": {
     "@angular/common": "2.0.0",
     "@angular/compiler": "2.0.0",
@@ -40,6 +57,7 @@
     "karma-cli": "^1.0.1",
     "karma-jasmine": "^1.0.2",
     "karma-remap-istanbul": "^0.2.1",
+    "postcss-assets": "^4.1.0",
     "protractor": "4.0.3",
     "ts-node": "1.2.1",
     "tslint": "3.13.0",
