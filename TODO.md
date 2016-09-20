@@ -6,7 +6,7 @@ feat(range): have ability to have the starting "zeroed" position be different th
 feat(phelper): when phelper line/text goes over a unit title that unit title should be hidden until the phelper moves past that unit title.
 feat(renderers): implement css and canvas renderers and add ability to switch between the current svg renderer and the two new ones.
 
-fix(transforms): css svg transforms do not work in IE & Edge browsers. Consider using the svg transform attribute instead of the css style.transform attribute.
+fix(transforms): css svg transforms do not work in IE/Edge/Safari browsers. Consider using the svg transform attribute instead of the css style.transform attribute.
 
 doc(readme): update readme to include project specific information.
 doc(wiki): create tool documentation.
